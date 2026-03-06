@@ -1,0 +1,39 @@
+[package]
+name = "skills-manager"
+version = "0.3.0"
+description = "Skills + MCP Manager for 42+ AI Agents"
+authors = ["Skills Manager Team"]
+edition = "2021"
+
+[lib]
+name = "skills_manager_lib"
+crate-type = ["lib", "cdylib", "staticlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-shell = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["full"] }
+thiserror = "1"
+tempfile = "3"
+reqwest = { version = "0.12", features = ["json"] }
+sha2 = "0.10"
+log = "0.4"
+env_logger = "0.11"
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1", features = ["v4"] }
+dirs = "5"
+regex = "1"
+async-trait = "0.1"
+url = "2"
+serde_yaml = "0.9"
+toml = "0.8"
+urlencoding = "2.1"
+
+[dev-dependencies]
+mockall = "0.12"
+serial_test = "3"

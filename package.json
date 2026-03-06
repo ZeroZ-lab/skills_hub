@@ -1,0 +1,42 @@
+{
+  "name": "skills-manager-monorepo",
+  "version": "0.3.0",
+  "private": false,
+  "license": "MIT",
+  "author": "Skills Manager Team",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/skills-manager.git"
+  },
+  "keywords": [
+    "ai-agent",
+    "mcp",
+    "skills",
+    "tauri",
+    "desktop-app",
+    "rust",
+    "react"
+  ],
+  "description": "Skills + MCP Manager for 42+ AI Agents",
+  "scripts": {
+    "dev": "pnpm --filter desktop tauri dev",
+    "build": "pnpm --filter desktop tauri build",
+    "tauri": "pnpm --filter desktop tauri",
+    "test": "pnpm --filter core test",
+    "lint": "eslint . --ext ts,tsx",
+    "lint:fix": "eslint . --ext ts,tsx --fix",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,css,md}\""
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "eslint": "^8.56.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-react": "^7.33.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.5",
+    "prettier": "^3.2.4"
+  }
+}

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skills Manager - v0.3.0 品牌升级版</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --bg-primary: #0f0f1a;
+            --bg-secondary: #1e1e2e;
+            --bg-tertiary: #2d2d44;
+            --border-default: #2d2d44;
+            --accent-indigo: #6366f1;
+            --accent-purple: #8b5cf6;
+            --accent-green: #10b981;
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--bg-primary);
+            color: #f3f4f6;
+            overflow: hidden;
+        }
+
+        .sidebar-item { transition: all 0.2s ease; border-right: 3px solid transparent; }
+        .sidebar-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
+        .sidebar-item.active { 
+            background: rgba(99,102,241,0.15); 
+            color: #818cf8; 
+            border-right-color: #818cf8; 
+        }
+
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-default);
+            border-radius: 0.75rem;
+            transition: all 0.2s ease-out;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.5);
+            border-color: var(--accent-indigo);
+        }
+
+        .mcp-status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        .mcp-status-dot.connected { background: #10b981; box-shadow: 0 0 8px #10b981; }
+        .mcp-status-dot.disconnected { background: #6b7280; }
+        .mcp-status-dot.error { background: #ef4444; box-shadow: 0 0 8px #ef4444; }
+
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: var(--bg-primary); }
+        .custom-scroll::-webkit-scrollbar-thumb { background: var(--bg-tertiary); border-radius: 10px; }
+
+        .page-content { display: none; animation: fadeIn 0.3s ease-out; }
+        .page-content.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .agent-badge {
+            font-size: 0.7rem;
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        /* Agent Colors */
+        .bg-claude { background: rgba(139, 92, 246, 0.15); color: #a78bfa; }
+        .bg-cursor { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+        .bg-openclaw { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+        .bg-gemini { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+        .bg-codex { background: rgba(6, 182, 212, 0.15); color: #22d3ee; }
+
+        /* Icon Glow */
+        .icon-shadow { filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.4)); }
+    </style>
+</head>
+<body class="h-screen flex">
+
+    <!-- 侧边栏 -->
+    <aside class="w-64 bg-[#141421] border-r border-[#2d2d44] flex flex-col z-20">
+        <!-- APP ICON & LOGO -->
+        <div class="p-6">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 icon-shadow">
+                    <!-- 新设计的 Project Icon -->
+                    <svg viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="512" height="512" rx="112" fill="#1E1E2E"/>
+                        <defs>
+                            <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+                                <stop offset="0%" stop-color="#6366F1"/>
+                                <stop offset="100%" stop-color="#8B5CF6"/>
+                            </linearGradient>
+                        </defs>
+                        <!-- 等轴测立方体 -->
+                        <path d="M256 120 L380 180 L256 240 L132 180 Z" fill="#A78BFA"/>
+                        <path d="M132 180 L256 240 L256 360 L132 300 Z" fill="#6366F1" fill-opacity="0.9"/>
+                        <path d="M380 180 L256 240 L256 360 L380 300 Z" fill="#6366F1" fill-opacity="0.7"/>
+                        <!-- 连接点 (MCP Hub) -->
+                        <circle cx="256" cy="120" r="14" fill="#818CF8"/>
+                        <circle cx="132" cy="300" r="14" fill="#10B981"/>
+                        <circle cx="380" cy="300" r="14" fill="#10B981"/>
+                        <circle cx="256" cy="360" r="14" fill="#10B981"/>
+                        <!-- 悬浮的小方块 (Skill) -->
+                        <g transform="translate(0, -25)">
+                            <path d="M256 160 L300 182 L256 204 L212 182 Z" fill="#C084FC"/>
+                            <path d="M212 182 L256 204 L256 240 L212 218 Z" fill="#818CF8"/>
+                            <path d="M300 182 L256 204 L256 240 L300 218 Z" fill="#6366F1"/>
+                        </g>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg text-white tracking-tight leading-none">Skills Hub</h1>
+                    <p class="text-[9px] text-gray-500 uppercase font-black tracking-widest mt-1">Management</p>
+                </div>
+            </div>
+        </div>
+
+        <nav class="flex-1 px-3 space-y-1 overflow-y-auto custom-scroll">
+            <div class="px-3 py-2 text-[11px] font-bold text-gray-500 uppercase tracking-wider">主视图</div>
+            <a href="javascript:void(0)" onclick="switchPage('dashboard', this)" class="nav-item sidebar-item active flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm">
+                <i class="fas fa-th-large w-5 text-center"></i> 仪表盘
+            </a>
+            <a href="javascript:void(0)" onclick="switchPage('installed', this)" class="nav-item sidebar-item flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-gray-400">
+                <i class="fas fa-box-archive w-5 text-center"></i> 已安装 Skills
+            </a>
+            <a href="javascript:void(0)" onclick="switchPage('discover', this)" class="nav-item sidebar-item flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-gray-400">
+                <i class="fas fa-compass w-5 text-center"></i> 发现
+            </a>
+
+            <div class="px-3 py-2 mt-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider">工具与配置</div>
+            <a href="javascript:void(0)" onclick="switchPage('mcp', this)" class="nav-item sidebar-item flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-gray-400">
+                <i class="fas fa-server w-5 text-center"></i> MCP 服务器
+            </a>
+            <a href="javascript:void(0)" onclick="switchPage('agents', this)" class="nav-item sidebar-item flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-gray-400">
+                <i class="fas fa-robot w-5 text-center"></i> Agents 状态
+            </a>
+            <a href="javascript:void(0)" onclick="switchPage('settings', this)" class="nav-item sidebar-item flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-gray-400">
+                <i class="fas fa-sliders w-5 text-center"></i> 全局设置
+            </a>
+        </nav>
+
+        <div class="p-4 border-t border-[#2d2d44]">
+            <div class="bg-indigo-500/5 rounded-xl border border-indigo-500/10 p-3">
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="mcp-status-dot connected"></span>
+                    <span class="text-[11px] font-semibold text-gray-300">Core Engine Online</span>
+                </div>
+                <div class="text-[10px] text-gray-500">12 Skills · 5 MCP Servers</div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- 主界面 -->
+    <main class="flex-1 flex flex-col min-w-0 bg-[#0f0f1a]">
+        <!-- 顶栏 -->
+        <header class="h-16 border-b border-[#2d2d44] flex items-center justify-between px-8 bg-[#0f0f1a]/80 backdrop-blur-xl z-10">
+            <div id="page-title">
+                <h2 class="text-lg font-bold text-white">仪表盘</h2>
+            </div>
+            <div class="flex items-center gap-4">
+                <button onclick="startSystemScan()" class="bg-[#1e1e2e] border border-[#2d2d44] hover:border-indigo-500/50 text-indigo-400 px-4 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2">
+                    <i class="fas fa-radar animate-spin-slow"></i> 系统迁移扫描
+                </button>
+                <button onclick="openInstallModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2 shadow-lg shadow-indigo-600/20">
+                    <i class="fas fa-plus"></i> 安装 Skill
+                </button>
+            </div>
+        </header>
+
+        <!-- 页面容器 (保持逻辑) -->
+        <div class="flex-1 overflow-y-auto custom-scroll p-8">
+            <div id="page-dashboard" class="page-content active space-y-8">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="card p-5 flex flex-col justify-between h-32 card-hover">
+                        <div class="flex justify-between items-start"><div class="w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center"><i class="fas fa-cubes text-blue-400"></i></div></div>
+                        <div><div class="text-2xl font-black text-white">42</div><div class="text-xs text-gray-500">已安装 Skills</div></div>
+                    </div>
+                    <div class="card p-5 flex flex-col justify-between h-32 card-hover">
+                        <div class="flex justify-between items-start"><div class="w-10 h-10 bg-purple-500/10 rounded-lg flex items-center justify-center"><i class="fas fa-robot text-purple-400"></i></div></div>
+                        <div><div class="text-2xl font-black text-white">8 / 12</div><div class="text-xs text-gray-500">活跃 Agents</div></div>
+                    </div>
+                    <div class="card p-5 flex flex-col justify-between h-32 card-hover">
+                        <div class="flex justify-between items-start"><div class="w-10 h-10 bg-indigo-500/10 rounded-lg flex items-center justify-center"><i class="fas fa-plug text-indigo-400"></i></div></div>
+                        <div><div class="text-2xl font-black text-white">5</div><div class="text-xs text-gray-500">MCP 服务器</div></div>
+                    </div>
+                    <div class="card p-5 flex flex-col justify-between h-32 card-hover border-green-500/20">
+                        <div class="flex justify-between items-start"><div class="w-10 h-10 bg-green-500/10 rounded-lg flex items-center justify-center"><i class="fas fa-shield-check text-green-400"></i></div></div>
+                        <div><div class="text-2xl font-black text-white">100%</div><div class="text-xs text-gray-500 font-medium text-green-500">安全合规</div></div>
+                    </div>
+                </div>
+
+                <div class="card bg-gradient-to-r from-indigo-600/10 to-transparent border-indigo-500/20 p-6 flex items-center justify-between">
+                    <div class="flex items-center gap-6">
+                        <div class="w-14 h-14 bg-indigo-600/20 rounded-2xl flex items-center justify-center text-indigo-400 text-2xl shadow-inner"><i class="fas fa-wand-sparkles"></i></div>
+                        <div>
+                            <h3 class="text-md font-bold text-white">发现存量配置！</h3>
+                            <p class="text-xs text-gray-400 mt-1 max-w-lg">我们检测到本机已安装的 Claude Code 和 Cursor 中含有 8 个存量 Skills 和 3 个 MCP 配置。是否立即导入？</p>
+                        </div>
+                    </div>
+                    <button onclick="startSystemScan()" class="px-6 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold shadow-lg shadow-indigo-600/20">立即开始迁移</button>
+                </div>
+            </div>
+
+            <div id="page-installed" class="page-content"></div>
+            <div id="page-discover" class="page-content"></div>
+            <div id="page-mcp" class="page-content"></div>
+            <div id="page-agents" class="page-content"></div>
+            <div id="page-settings" class="page-content"></div>
+        </div>
+    </main>
+
+    <script>
+        function switchPage(pageId, el) {
+            document.querySelectorAll('.nav-item').forEach(i => { i.classList.remove('active'); i.classList.add('text-gray-400'); });
+            el.classList.add('active'); el.classList.remove('text-gray-400');
+            document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
+            document.getElementById('page-' + pageId).classList.add('active');
+            document.querySelector('#page-title h2').innerText = el.innerText.trim();
+        }
+        function startSystemScan() { alert("正在启动系统级迁移扫描..."); }
+        function openInstallModal() { alert("安装功能准备就绪"); }
+    </script>
+</body>
+</html>

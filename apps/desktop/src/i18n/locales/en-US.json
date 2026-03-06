@@ -1,0 +1,462 @@
+{
+  "app": {
+    "name": "Skills Manager",
+    "version": "v0.3.0"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "discover": "Discover",
+    "skills": "Skills",
+    "mcp": "MCP",
+    "agents": "Agents",
+    "settings": "Settings",
+    "group": {
+      "management": "Management",
+      "system": "System"
+    }
+  },
+  "common": {
+    "search": "Search",
+    "install": "Install",
+    "uninstall": "Uninstall",
+    "update": "Update",
+    "remove": "Remove",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "close": "Close",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "warning": "Warning",
+    "info": "Info",
+    "empty": "No data",
+    "all": "All",
+    "filter": "Filter",
+    "sort": "Sort",
+    "actions": "Actions",
+    "details": "Details",
+    "more": "More",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "finish": "Finish",
+    "retry": "Retry",
+    "refresh": "Refresh",
+    "import": "Import",
+    "export": "Export",
+    "add": "Add",
+    "edit": "Edit",
+    "create": "Create",
+    "delete": "Delete",
+    "enable": "Enable",
+    "disable": "Disable",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "active": "Active",
+    "inactive": "Inactive",
+    "online": "online",
+    "offline": "offline",
+    "agents": "agents",
+    "across": "across",
+    "status": "Status",
+    "name": "Name",
+    "description": "Description",
+    "type": "Type",
+    "category": "Category",
+    "tags": "Tags",
+    "version": "Version",
+    "author": "Author",
+    "source": "Source",
+    "installs": "Installs",
+    "stars": "Stars",
+    "date": "Date",
+    "time": "Time",
+    "settings": "Settings",
+    "preferences": "Preferences",
+    "general": "General",
+    "advanced": "Advanced",
+    "about": "About",
+    "help": "Help",
+    "documentation": "Documentation",
+    "feedback": "Feedback",
+    "reportIssue": "Report Issue",
+    "checkUpdate": "Check for Updates",
+    "newVersion": "New Version",
+    "updateAvailable": "Update Available",
+    "noUpdate": "Up to Date",
+    "installing": "Installing...",
+    "updating": "Updating...",
+    "removing": "Removing...",
+    "saving": "Saving...",
+    "processing": "Processing...",
+    "pleaseWait": "Please wait...",
+    "noResults": "No results found",
+    "tryAgain": "Please try again",
+    "clear": "Clear",
+    "reset": "Reset",
+    "apply": "Apply",
+    "discard": "Discard",
+    "continue": "Continue",
+    "stop": "Stop",
+    "start": "Start",
+    "pause": "Pause",
+    "resume": "Resume",
+    "copy": "Copy",
+    "paste": "Paste",
+    "cut": "Cut",
+    "selectAll": "Select All",
+    "deselect": "Deselect",
+    "expand": "Expand",
+    "collapse": "Collapse",
+    "show": "Show",
+    "hide": "Hide",
+    "visible": "Visible",
+    "hidden": "Hidden",
+    "open": "Open",
+    "closeAll": "Close All",
+    "minimize": "Minimize",
+    "maximize": "Maximize",
+    "restore": "Restore",
+    "exit": "Exit",
+    "quit": "Quit",
+    "logout": "Logout",
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "forgotPassword": "Forgot Password",
+    "resetPassword": "Reset Password",
+    "changePassword": "Change Password",
+    "profile": "Profile",
+    "account": "Account",
+    "security": "Security",
+    "privacy": "Privacy",
+    "notifications": "Notifications",
+    "language": "Language",
+    "theme": "Theme",
+    "dark": "Dark",
+    "light": "Light",
+    "system": "System",
+    "auto": "Auto",
+    "manual": "Manual",
+    "default": "Default",
+    "custom": "Custom",
+    "none": "None",
+    "other": "Other",
+    "unknown": "Unknown",
+    "notSet": "Not Set",
+    "optional": "Optional",
+    "required": "Required",
+    "recommended": "Recommended",
+    "beta": "Beta",
+    "alpha": "Alpha",
+    "stable": "Stable",
+    "latest": "Latest",
+    "preview": "Preview",
+    "deprecated": "Deprecated",
+    "experimental": "Experimental",
+    "maintained": "Maintained",
+    "archived": "Archived",
+    "chinese": "中文",
+    "english": "English"
+  },
+  "pages": {
+    "dashboard": {
+      "title": "Dashboard",
+      "description": "Overview of your Skills, Agents and MCP Servers",
+      "stats": {
+        "skillsInstalled": "Skills Installed",
+        "agentsActive": "Active Agents",
+        "mcpServers": "MCP Servers",
+        "updatesAvailable": "Updates Available",
+        "security": "Security"
+      },
+      "newVersionsReady": "New versions ready",
+      "noIssues": "No issues",
+      "updates": "updates",
+      "quickActions": {
+        "title": "Quick Actions",
+        "installSkill": "Install Skill",
+        "addMCPServer": "Add MCP Server",
+        "detectAgents": "Detect Agents",
+        "detecting": "Detecting...",
+        "checkUpdates": "Check Updates",
+        "checking": "Checking...",
+        "exportConfig": "Export Config"
+      },
+      "recentActivity": {
+        "title": "Recent Activity",
+        "empty": "No recent activity"
+      },
+      "installedSkills": {
+        "title": "Installed Skills Overview",
+        "empty": "No skills installed yet",
+        "emptyDesc": "Browse the discovery page to find skills",
+        "noDescription": "No description"
+      },
+      "topSkills": {
+        "title": "Top Skills"
+      }
+    },
+    "discover": {
+      "title": "Discover",
+      "description": "Search and discover AI Agent Skills",
+      "searchPlaceholder": "Search skills...",
+      "searching": "Searching...",
+      "noResults": "No results found",
+      "noResultsDesc": "No skills match your search. Try adjusting your search terms.",
+      "clearSearch": "Clear search",
+      "discoverSkills": "Discover Skills",
+      "loadingDesc": "Loading popular skills...",
+      "install": "Install"
+    },
+    "skills": {
+      "title": "Skills",
+      "description": "Manage your installed skills",
+      "searchPlaceholder": "Search skills...",
+      "filter": {
+        "allAgents": "All Agents",
+        "allScopes": "All Scopes",
+        "global": "Global",
+        "project": "Project"
+      },
+      "actions": {
+        "sync": "Sync",
+        "import": "Import",
+        "checkUpdates": "Check Updates",
+        "installSkill": "Install Skill"
+      },
+      "table": {
+        "name": "Name",
+        "agents": "Agents",
+        "scope": "Scope",
+        "updated": "Updated",
+        "actions": "Actions"
+      },
+      "empty": {
+        "title": "No Skills",
+        "description": "Click \"Install Skill\" to add your first skill"
+      },
+      "installModal": {
+        "title": "Install Skill",
+        "sourceLabel": "Source",
+        "sourcePlaceholder": "Enter GitHub URL or local path...",
+        "agentsLabel": "Install to",
+        "modeLabel": "Install Mode",
+        "symlink": "Symlink (Recommended)",
+        "copy": "Copy",
+        "scopeLabel": "Scope",
+        "global": "Global",
+        "project": "Project",
+        "installing": "Installing...",
+        "install": "Install"
+      },
+      "importModal": {
+        "title": "Import Skills",
+        "description": "Scan and import skills from system directories",
+        "scanAll": "Scan All Directories",
+        "scanAllDesc": "Scan ~/.agents/skills, ~/.claude/skills and other common directories",
+        "orFromAgent": "Or import from specific Agent:",
+        "noAgents": "No installed agents detected",
+        "startScan": "Start Scan",
+        "scanning": "Scanning...",
+        "scanningDesc": "Scanning skills directories...",
+        "complete": "Scan Complete",
+        "found": "Skills found",
+        "imported": "Imported",
+        "skipped": "Skipped",
+        "errors": "Warnings and Errors",
+        "done": "Done",
+        "error": "Scan Failed",
+        "retry": "Retry"
+      }
+    },
+    "mcp": {
+      "title": "MCP",
+      "description": "Manage Model Context Protocol server configurations",
+      "searchPlaceholder": "Search MCP servers...",
+      "filter": {
+        "allTypes": "All Types",
+        "stdio": "Stdio",
+        "sse": "SSE",
+        "http": "HTTP"
+      },
+      "actions": {
+        "import": "Import",
+        "addServer": "Add Server"
+      },
+      "table": {
+        "name": "Name",
+        "type": "Type",
+        "status": "Status",
+        "agents": "Agents",
+        "actions": "Actions"
+      },
+      "filter": {
+        "allAgents": "All Agents"
+      },
+      "empty": {
+        "title": "No MCP servers configured",
+        "description": "MCP servers extend your AI agents with external tools and data sources. Add your first server or import existing configurations from an agent.",
+        "importButton": "Import from Agent",
+        "addButton": "Add your first MCP server"
+      },
+      "noResults": {
+        "title": "No servers found",
+        "description": "No MCP servers match your current filters. Try adjusting your search or add a new server."
+      },
+      "serverCount": {
+        "single": "server",
+        "multiple": "servers"
+      },
+      "status": {
+        "connected": "Connected",
+        "disconnected": "Disconnected",
+        "error": "Error",
+        "synced": "Synced",
+        "pending": "Pending"
+      },
+      "addModal": {
+        "title": "Add MCP Server",
+        "nameLabel": "Name",
+        "typeLabel": "Type",
+        "configLabel": "Config",
+        "agentsLabel": "Associated Agents",
+        "adding": "Adding...",
+        "add": "Add"
+      },
+      "importModal": {
+        "title": "Import MCP Config",
+        "description": "Import MCP server configurations from installed agents",
+        "selectAgent": "Select Agent",
+        "noAgents": "No installed agents detected",
+        "importing": "Importing...",
+        "import": "Import",
+        "complete": "Import Complete",
+        "done": "Done",
+        "error": "Import Failed"
+      }
+    },
+    "agents": {
+      "title": "Agents",
+      "description": "Manage and detect installed AI agents",
+      "searchPlaceholder": "Search agents...",
+      "detecting": "Detecting...",
+      "reDetect": "Re-detect",
+      "detectAgents": "Detect Agents",
+      "stats": {
+        "total": "agents total",
+        "installed": "installed"
+      },
+      "filter": {
+        "all": "All",
+        "installed": "Installed"
+      },
+      "empty": {
+        "noAgents": "No agents detected",
+        "noMatching": "No matching agents",
+        "noAgentsDesc": "Click \"Re-detect\" to scan for installed AI agents on your system.",
+        "noMatchingDesc": "Try adjusting your search or filter criteria."
+      },
+      "card": {
+        "skills": "skills",
+        "mcp": "MCP",
+        "status": {
+          "online": "Online",
+          "offline": "Offline"
+        }
+      }
+    },
+    "settings": {
+      "title": "Settings",
+      "description": "Application configuration and preferences",
+      "saving": "Saving...",
+      "saveChanges": "Save Changes",
+      "saved": "Saved",
+      "saveError": "Save Failed",
+      "sections": {
+        "general": {
+          "title": "General",
+          "description": "Default installation behavior and scope",
+          "installMode": {
+            "label": "Default Install Mode",
+            "description": "Choose the default method for installing skills"
+          },
+          "installScope": {
+            "label": "Default Install Scope",
+            "description": "Choose the default scope for skill installation"
+          },
+          "defaultAgents": {
+            "label": "Default Agents",
+            "description": "Select which agents to install skills to by default"
+          }
+        },
+        "appearance": {
+          "title": "Appearance",
+          "description": "Customize the application appearance",
+          "theme": {
+            "label": "Theme",
+            "system": "System",
+            "light": "Light",
+            "dark": "Dark"
+          },
+          "language": {
+            "label": "Language",
+            "description": "Select application display language"
+          }
+        },
+        "network": {
+          "title": "Network",
+          "description": "Network connection and proxy settings",
+          "githubToken": {
+            "label": "GitHub Token",
+            "description": "For accessing GitHub API with higher rate limits"
+          }
+        },
+        "advanced": {
+          "title": "Advanced",
+          "description": "Advanced settings and options",
+          "cache": {
+            "label": "Cache",
+            "clear": "Clear Cache"
+          },
+          "data": {
+            "label": "Data",
+            "export": "Export Config",
+            "import": "Import Config",
+            "backup": "Create Backup",
+            "restore": "Restore Backup"
+          }
+        }
+      }
+    }
+  },
+  "errors": {
+    "generic": "An error occurred",
+    "notFound": "Not found",
+    "network": "Network error",
+    "timeout": "Request timeout",
+    "invalidInput": "Invalid input",
+    "permissionDenied": "Permission denied",
+    "alreadyExists": "Already exists",
+    "notInstalled": "Not installed",
+    "installFailed": "Installation failed",
+    "updateFailed": "Update failed",
+    "removeFailed": "Remove failed",
+    "loadFailed": "Load failed",
+    "saveFailed": "Save failed",
+    "parseFailed": "Parse failed",
+    "validationFailed": "Validation failed",
+    "unknownError": "Unknown error"
+  },
+  "notifications": {
+    "installSuccess": "Installation successful",
+    "updateSuccess": "Update successful",
+    "removeSuccess": "Remove successful",
+    "saveSuccess": "Save successful",
+    "importSuccess": "Import successful",
+    "exportSuccess": "Export successful",
+    "backupSuccess": "Backup successful",
+    "restoreSuccess": "Restore successful",
+    "copySuccess": "Copied to clipboard"
+  }
+}
