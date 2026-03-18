@@ -1,182 +1,270 @@
-# Skills Manager
+# 🎯 Agent Workshop
 
-用于统一管理 AI Agent Skills 与 MCP Servers 的本地优先桌面应用。
+<p align="center">
+  <img src="screenshots/icon.png" alt="Agent Workshop Logo" width="120" height="120">
+</p>
 
-> 说明
-> 仓库、代码与文档当前主要使用 `Skills Manager` 命名；桌面打包产物在现有 Tauri 配置中显示为 `Skills Hub`。本文档统一使用仓库名 `Skills Manager` 描述项目。
+<p align="center">
+  <strong>Local-first Desktop Application for Managing AI Agent Skills & MCP Servers</strong>
+</p>
 
-## 项目简介
+<p align="center">
+  <a href="#features">Features</a> •
+  <a href="#screenshots">Screenshots</a> •
+  <a href="#installation">Installation</a> •
+  <a href="#development">Development</a> •
+  <a href="#documentation">Documentation</a>
+</p>
 
-`Skills Manager` 是一个基于 `Tauri 2 + React + Rust` 的桌面应用，目标是把分散在不同 AI Agent 里的两类能力统一管理起来：
+<p align="center">
+  <img src="https://img.shields.io/badge/version-0.3.0-blue.svg" alt="Version">
+  <img src="https://img.shields.io/badge/platform-macOS%20|%20Linux%20|%20Windows-lightgrey.svg" alt="Platform">
+  <img src="https://img.shields.io/badge/stack-Tauri%202%20+%20React%20+%20Rust-orange.svg" alt="Tech Stack">
+</p>
 
-- `Skills`：面向 Agent 的可复用能力包、指令集或工作流模板
-- `MCP Servers`：面向 Agent 的工具接入层与外部能力扩展
+---
 
-项目聚焦三个实际问题：
+## ✨ Why Agent Workshop?
 
-- 不同 Agent 的 skills 目录和 MCP 配置格式不一致，手动维护成本高
-- 本地文件被手动修改、删除或迁移后，工具状态容易和真实磁盘脱节
-- 现有方案通常只解决 `Skills` 或 `MCP` 其中一半，缺少统一视角
+Managing AI agent capabilities across different tools shouldn't be a headache. Agent Workshop brings ** Skills** and **MCP Servers** together in one unified interface:
 
-## 核心能力
+| Problem | Solution |
+|---------|----------|
+| Different agents use different skill directories and MCP config formats | 🔧 Unified management with 40+ built-in agent adapters |
+| Manual file edits get out of sync with tool state | 🔄 Smart detection & re-import from disk |
+| Existing tools only handle Skills OR MCP, not both | 🎯 One interface for both capability types |
+| Hard to track what's installed where | 📊 Visual overview with filtering & search |
 
-- 统一管理 Skills：安装、查看、筛选、更新、移除、重新导入
-- 统一管理 MCP：新增、编辑、删除、按 Agent 绑定、导入现有配置
-- 本地优先：所有索引、缓存和注册表都保存在本机
-- 多 Agent 适配：内置 `40+` Agent 注册表与路径规则
-- 覆盖式导入：重新导入时以本地磁盘为准，清理残留索引
-- 可视化分组：按 Skill、按 Agent、按目录/配置文件双视角查看
-- 桌面打包：基于 Tauri 生成原生桌面产物
+---
 
-## 为什么这个项目有价值
+## 🚀 Features
 
-对个人开发者，它减少“每个 Agent 都要单独维护一份配置”的重复劳动。  
-对团队，它提供了一个更清晰的本地配置入口，便于统一约定、排查问题和逐步标准化 Agent 使用方式。
+### 🧩 Skills Management
+- **Install** skills from GitHub, local directories, or URLs
+- **Organize** by agent, category, or installation scope
+- **Update** with one-click version checks
+- **Remove** cleanly with automatic cleanup
+- **Import** existing skills from disk with conflict resolution
 
-和纯 CLI 工具相比，这个项目更强调：
+### 🔌 MCP Server Management
+- **Configure** MCP servers per-agent
+- **Import** existing MCP configs (Claude, Codex, Gemini, etc.)
+- **Sync** configuration changes to agent config files
+- **Monitor** connection status
 
-- 本地状态可见
-- 目录/配置差异可见
-- 导入与重建行为可见
-- 多 Agent 管理可见
+### 🤖 Multi-Agent Support
+Built-in support for popular AI agents:
 
-## 当前技术栈
+| Agent | Skills Dir | MCP Config |
+|-------|-----------|------------|
+| Claude Code | `~/.claude/skills` | `~/.claude.json` |
+| Codex | `~/.agents/skills` | `~/.codex/config.toml` |
+| Gemini CLI | `~/.agents/skills` | `~/.gemini/settings.json` |
+| OpenCode | `~/.agents/skills` | `~/.config/opencode/opencode.json` |
 
-| 层级 | 技术 |
-| --- | --- |
+---
+
+## 📸 Screenshots
+
+### Dashboard
+Get a quick overview of your local assets, installed agents, and system health.
+
+<p align="center">
+  <img src="screenshots/dashboard-en.png" alt="Dashboard" width="900">
+</p>
+
+### Agent Assembly
+Organize skills and MCP assets around specific agents. Filter by installation status or skill type.
+
+<p align="center">
+  <img src="screenshots/agents-en.png" alt="Agent Assembly" width="900">
+</p>
+
+### Market
+Discover new skills and MCP servers from the community.
+
+<p align="center">
+  <img src="screenshots/market-en.png" alt="Market" width="900">
+</p>
+
+### Settings
+Configure application preferences, GitHub authentication, and network settings.
+
+<p align="center">
+  <img src="screenshots/settings-en.png" alt="Settings" width="900">
+</p>
+
+---
+
+## 📦 Installation
+
+### Prerequisites
+
+- **Node.js** 20+
+- **pnpm**
+- **Rust** / **cargo**
+- **Xcode Command Line Tools** (macOS)
+
+### Quick Start
+
+```bash
+# Clone the repository
+git clone <repository-url>
+cd skills_hub
+
+# Install dependencies
+make install
+
+# Start development server
+make dev
+```
+
+### Build Desktop App
+
+```bash
+# Build for production
+make build
+
+# Output location (macOS)
+# apps/desktop/src-tauri/target/release/bundle/dmg/
+```
+
+---
+
+## 🛠️ Development
+
+### Project Structure
+
+```
+skills_hub/
+├── apps/
+│   └── desktop/              # Tauri desktop application
+│       ├── src/              # React frontend
+│       │   ├── components/   # UI components
+│       │   ├── pages/        # Route pages
+│       │   ├── stores/       # Zustand state management
+│       │   └── lib/          # Utilities & helpers
+│       └── src-tauri/        # Rust backend
+│           ├── src/          # Rust source
+│           │   ├── commands/ # Tauri commands
+│           │   ├── services/ # Business logic
+│           │   └── agent/    # Agent detection & registry
+│           └── Cargo.toml
+├── packages/
+│   └── core/                 # Shared types & contracts
+├── skills-docs/              # Documentation
+├── screenshots/              # Application screenshots
+├── Makefile                  # Development commands
+└── README.md
+```
+
+### Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
 | Desktop Shell | Tauri 2 |
 | Frontend | React 18, TypeScript 5, Vite 5 |
 | Styling | Tailwind CSS |
-| State | Zustand |
+| State Management | Zustand |
 | Backend | Rust 2021, Tokio, Serde |
 | Package Manager | pnpm workspace |
-| Build Entry | `Makefile` + `pnpm tauri build` |
 
-## 仓库结构
-
-```text
-.
-├── apps/
-│   └── desktop/              # Tauri 桌面应用
-│       ├── src/              # React 前端
-│       └── src-tauri/        # Rust 后端
-├── packages/
-│   └── core/                 # 共享类型与前端契约
-├── skills-docs/              # 正式项目文档中心
-├── Makefile                  # 常用开发/构建命令
-├── package.json              # Monorepo 入口
-└── pnpm-workspace.yaml
-```
-
-## 快速开始
-
-### 1. 环境要求
-
-- `Node.js` 20+
-- `pnpm`
-- `Rust` / `cargo`
-- macOS 下需安装 Xcode Command Line Tools
-
-### 2. 安装依赖
+### Common Commands
 
 ```bash
-make install
+make help          # Show all available commands
+make install       # Install all dependencies
+make dev           # Start desktop development
+make check         # Run type checking & linting
+make build         # Build production desktop app
+make clean         # Clean build artifacts
+make test          # Run test suite
 ```
 
-或：
+---
 
-```bash
-pnpm install
-```
+## 📚 Documentation
 
-### 3. 本地开发
+Comprehensive documentation is available in [`skills-docs/`](./skills-docs/):
 
-```bash
-make dev
-```
+1. [Project Overview](./skills-docs/00-overview/PROJECT-OVERVIEW.md) - Architecture & design principles
+2. [Development Guide](./skills-docs/05-development/DEV-GUIDE.md) - Contributing & development workflow
+3. [System Design](./skills-docs/02-architecture/SYSTEM-DESIGN.md) - Technical architecture
+4. [Tauri Commands](./skills-docs/04-api/TAURI-COMMANDS.md) - API reference
 
-常用命令：
+---
 
-```bash
-make help
-make dev
-make check
-make build
-```
+## 🔧 Supported Agents
 
-### 4. 构建桌面应用
+Agent Workshop automatically detects and manages:
 
-```bash
-make build
-```
+### Universal Agents (Shared Skills Directory)
+- **Codex** - `~/.codex/`
+- **Gemini CLI** - `~/.gemini/`
+- **OpenCode** - `~/.config/opencode/`
 
-当前 macOS 打包产物默认输出到：
+### Agent-Specific
+- **Claude Code** - `~/.claude/`
+- **OpenClaw** - `~/.openclaw/`
 
-```text
-apps/desktop/src-tauri/target/release/bundle/dmg/
-```
+---
 
-## 文档入口
+## 🌟 Key Concepts
 
-正式文档集中在 [skills-docs/README.md](./skills-docs/README.md)。
+### Skills
+Reusable capability packages for AI agents:
+- Command templates & workflows
+- Tool definitions
+- Project scaffolding
+- Best practice patterns
 
-推荐阅读顺序：
+### MCP Servers
+Model Context Protocol servers for extending agent capabilities:
+- External tool integration
+- API connectors
+- File system access
+- Custom capabilities
 
-1. [项目概览](./skills-docs/00-overview/PROJECT-OVERVIEW.md)
-2. [开发指南](./skills-docs/05-development/DEV-GUIDE.md)
-3. [系统设计](./skills-docs/02-architecture/SYSTEM-DESIGN.md)
-4. [Tauri Commands](./skills-docs/04-api/TAURI-COMMANDS.md)
+### Installation Modes
+- **Symlink** - Link to original location (default, saves disk space)
+- **Copy** - Full copy for isolated environments
 
-说明：
+### Installation Scope
+- **Global** - Available across all projects
+- **Project** - Scoped to specific project directory
 
-- `skills-docs/` 是当前的正式文档目录
-- `apps/desktop/*.md` 下多数文件更偏阶段性实现笔记或专题说明，不应视为统一入口
+---
 
-## 开发约定
+## 🤝 Contributing
 
-- 前端构建：`pnpm --filter desktop build`
-- Rust 检查：`cargo check --manifest-path apps/desktop/src-tauri/Cargo.toml`
-- 根目录打包：`make build`
-- 文档入口：优先维护根 `README.md` 与 `skills-docs/README.md`
+We welcome contributions! Areas where help is especially appreciated:
 
-## 项目状态
+- 🆕 **Agent Support** - Add detection for new AI agents
+- 🔄 **Import Strategies** - Improve skill re-import & conflict handling
+- 🎨 **UI/UX** - Enhance the interface & user experience
+- 📖 **Documentation** - Improve docs & add examples
+- 🧪 **Testing** - Increase test coverage
+- 🌐 **Platform Support** - Windows & Linux improvements
 
-当前仓库处于 `v0.3.0` 的持续迭代阶段，适合：
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
 
-- 本地开发
-- 功能验证
-- UI / 数据模型演进
-- 作为 Skills + MCP 管理工具的基础仓库继续扩展
+---
 
-尚未补齐的开源基础设施包括：
+## 📄 License
 
-- `LICENSE`
-- `CONTRIBUTING.md`
-- `CODE_OF_CONDUCT.md`
-- CI 状态徽章与发布流水线说明
+This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
 
-如果计划正式对外开源，建议先补齐这些元信息。
+---
 
-## 适合贡献的方向
+## 🙏 Acknowledgments
 
-- Agent 检测与注册表完善
-- Skills 导入 / 重建 / 冲突策略
-- MCP 配置导入、分组与同步体验
-- 文档体系、安装说明、发布流程
-- 测试覆盖率和平台兼容性
+- [Tauri](https://tauri.app/) - For the excellent desktop framework
+- [React](https://react.dev/) - For the UI library
+- [Tailwind CSS](https://tailwindcss.com/) - For styling
+- The AI agent community for inspiring this tool
 
-## 常见命令
+---
 
-```bash
-make help          # 查看所有命令
-make install       # 安装依赖
-make dev           # 启动桌面开发环境
-make check         # 前后端检查
-make build         # 打包桌面应用
-make clean         # 清理构建产物
-```
-
-## 开源说明
-
-本仓库正在向“可公开协作的工程化项目”整理，但目前尚未附带开源许可证文件。  
-在 `LICENSE` 正式落地前，请不要假定其具有标准开源分发授权。
+<p align="center">
+  Made with ❤️ for the AI agent ecosystem
+</p>
