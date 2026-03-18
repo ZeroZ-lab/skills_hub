@@ -4,20 +4,14 @@ import { useAgentsStore } from './agents';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
-export interface MCPAgentBinding {
-  agent: string;
-  enabled: boolean;
-  configPath: string;
-  format: string;
-  syncStatus: string; // "pending" | "synced" | "error"
-  lastSyncedAt: string | null;
-  lastError: string | null;
-}
-
-export interface MCPServer {
+/**
+ * MCP Server configuration (Agent-specific)
+ * MCP 配置直接属于 Agent，无全局注册表
+ */
+export interface AgentMCPServer {
   id: string;
   name: string;
-  type: string; // "stdio" | "sse" | "streamable-http"
+  type: string; // "stdio" | "sse" | "http"
   enabled: boolean;
   connectionStatus: string | null;
   config: {
@@ -26,12 +20,40 @@ export interface MCPServer {
     env?: Record<string, string>;
     url?: string;
     headers?: Record<string, string>;
+    method?: string;
   };
-  agents: MCPAgentBinding[];
   createdAt: string;
   updatedAt: string;
 }
 
+/**
+ * Agent and its MCP servers (for display)
+ */
+export interface AgentMCPConfig {
+  agent: string;
+  agentDisplayName: string;
+  configPath: string;
+  format: string;
+  servers: AgentMCPServer[];
+}
+
+// ─── Backward Compatibility ─────────────────────────────────────────────────
+
+/** @deprecated Use AgentMCPServer instead */
+export type MCPServer = AgentMCPServer;
+
+/** @deprecated No longer needed - MCP is directly tied to Agent */
+export interface MCPAgentBinding {
+  agent: string;
+  enabled: boolean;
+  configPath: string;
+  format: string;
+  syncStatus: string;
+  lastSyncedAt: string | null;
+  lastError: string | null;
+}
+
+/** @deprecated Use direct agent parameter instead */
 export interface MCPAgentBindingInput {
   agent: string;
   enabled: boolean;
@@ -40,58 +62,71 @@ export interface MCPAgentBindingInput {
 // ─── Store ──────────────────────────────────────────────────────────────────
 
 interface MCPState {
-  // Data
-  servers: MCPServer[];
+  // Data - organized by agent
+  agentServers: Map<string, AgentMCPServer[]>;
   isLoading: boolean;
   error: string | null;
 
-  // Filters
-  selectedAgent: string;
-  searchQuery: string;
+  // Currently selected agent for MCP management
+  selectedAgent: string | null;
 
   // Modals
   addModalOpen: boolean;
-  editingServer: MCPServer | null;
+  editingServer: AgentMCPServer | null;
   importModalOpen: boolean;
   isImporting: boolean;
 
-  // Actions
-  fetchServers: () => Promise<void>;
-  addServer: (
+  // Actions - all operations require agent parameter
+  fetchAgentServers: (agent: string) => Promise<void>;
+  addAgentServer: (
+    agent: string,
     name: string,
     serverType: string,
-    config: Record<string, unknown>,
-    agents: MCPAgentBindingInput[]
-  ) => Promise<MCPServer | null>;
-  updateServer: (
+    config: Record<string, unknown>
+  ) => Promise<AgentMCPServer | null>;
+  updateAgentServer: (
+    agent: string,
     id: string,
     updates: {
       name?: string;
       config?: Record<string, unknown>;
-      agents?: MCPAgentBindingInput[];
     }
-  ) => Promise<MCPServer | null>;
-  removeServer: (id: string) => Promise<void>;
-  toggleAgent: (serverId: string, agent: string, enabled: boolean) => Promise<void>;
-  importFromAgent: (agent: string) => Promise<MCPServer[]>;
+  ) => Promise<AgentMCPServer | null>;
+  removeAgentServer: (agent: string, id: string) => Promise<void>;
+  toggleAgentServer: (agent: string, id: string, enabled: boolean) => Promise<void>;
+
+  // Import - read existing MCP config from agent
+  importFromAgent: (agent: string) => Promise<AgentMCPServer[]>;
 
   // Setters
-  setSelectedAgent: (agent: string) => void;
-  setSearchQuery: (query: string) => void;
+  setSelectedAgent: (agent: string | null) => void;
   setAddModalOpen: (open: boolean) => void;
-  setEditingServer: (server: MCPServer | null) => void;
+  setEditingServer: (server: AgentMCPServer | null) => void;
   setImportModalOpen: (open: boolean) => void;
+
+  // ─── Backward Compatibility (deprecated) ────────────────────────────
+  /** @deprecated Use agentServers map instead */
+  servers: AgentMCPServer[];
+  /** @deprecated Use fetchAgentServers instead */
+  fetchServers: () => Promise<void>;
+  /** @deprecated Use addAgentServer instead */
+  addServer: (name: string, serverType: string, config: Record<string, unknown>, agents: { agent: string; enabled: boolean }[]) => Promise<AgentMCPServer | null>;
+  /** @deprecated Use updateAgentServer instead */
+  updateServer: (id: string, updates: { name?: string; config?: Record<string, unknown>; agents?: { agent: string; enabled: boolean }[] }) => Promise<AgentMCPServer | null>;
+  /** @deprecated Use removeAgentServer instead */
+  removeServer: (id: string) => Promise<void>;
+  /** @deprecated Use toggleAgentServer instead */
+  toggleAgent: (serverId: string, agent: string, enabled: boolean) => Promise<void>;
 }
 
 export const useMCPStore = create<MCPState>((set, get) => ({
   // Data
-  servers: [],
+  agentServers: new Map(),
   isLoading: false,
   error: null,
 
-  // Filters
-  selectedAgent: 'all',
-  searchQuery: '',
+  // Selected agent
+  selectedAgent: null,
 
   // Modals
   addModalOpen: false,
@@ -101,26 +136,28 @@ export const useMCPStore = create<MCPState>((set, get) => ({
 
   // ─── Actions ────────────────────────────────────────────────────────
 
-  fetchServers: async () => {
+  fetchAgentServers: async (agent) => {
     set({ isLoading: true, error: null });
     try {
-      const servers = await invoke<MCPServer[]>('list_mcp_servers');
-      set({ servers, isLoading: false });
+      const servers = await invoke<AgentMCPServer[]>('list_agent_mcp_servers', { agent });
+      const newMap = new Map(get().agentServers);
+      newMap.set(agent, servers);
+      set({ agentServers: newMap, isLoading: false });
     } catch (err) {
       set({ error: String(err), isLoading: false });
     }
   },
 
-  addServer: async (name, serverType, config, agents) => {
+  addAgentServer: async (agent, name, serverType, config) => {
     set({ isLoading: true, error: null });
     try {
-      const server = await invoke<MCPServer>('add_mcp_server', {
+      const server = await invoke<AgentMCPServer>('add_agent_mcp_server', {
+        agent,
         name,
         serverType,
         config,
-        agents,
       });
-      await get().fetchServers();
+      await get().fetchAgentServers(agent);
       await useAgentsStore.getState().fetchAgents();
       set({ addModalOpen: false });
       return server;
@@ -130,14 +167,15 @@ export const useMCPStore = create<MCPState>((set, get) => ({
     }
   },
 
-  updateServer: async (id, updates) => {
+  updateAgentServer: async (agent, id, updates) => {
     set({ isLoading: true, error: null });
     try {
-      const server = await invoke<MCPServer>('update_mcp_server', {
+      const server = await invoke<AgentMCPServer>('update_agent_mcp_server', {
+        agent,
         id,
         ...updates,
       });
-      await get().fetchServers();
+      await get().fetchAgentServers(agent);
       await useAgentsStore.getState().fetchAgents();
       set({ editingServer: null });
       return server;
@@ -147,21 +185,21 @@ export const useMCPStore = create<MCPState>((set, get) => ({
     }
   },
 
-  removeServer: async (id) => {
+  removeAgentServer: async (agent, id) => {
     set({ isLoading: true, error: null });
     try {
-      await invoke('remove_mcp_server', { id });
-      await get().fetchServers();
+      await invoke('remove_agent_mcp_server', { agent, id });
+      await get().fetchAgentServers(agent);
       await useAgentsStore.getState().fetchAgents();
     } catch (err) {
       set({ error: String(err), isLoading: false });
     }
   },
 
-  toggleAgent: async (serverId, agent, enabled) => {
+  toggleAgentServer: async (agent, id, enabled) => {
     try {
-      await invoke('toggle_mcp_agent', { serverId, agent, enabled });
-      await get().fetchServers();
+      await invoke('toggle_agent_mcp_server', { agent, id, enabled });
+      await get().fetchAgentServers(agent);
       await useAgentsStore.getState().fetchAgents();
     } catch (err) {
       set({ error: String(err) });
@@ -171,8 +209,8 @@ export const useMCPStore = create<MCPState>((set, get) => ({
   importFromAgent: async (agent) => {
     set({ isImporting: true, error: null });
     try {
-      const servers = await invoke<MCPServer[]>('import_mcp_from_agent', { agent });
-      await get().fetchServers();
+      const servers = await invoke<AgentMCPServer[]>('import_mcp_from_agent', { agent });
+      await get().fetchAgentServers(agent);
       await useAgentsStore.getState().fetchAgents();
       set({ isImporting: false });
       return servers;
@@ -185,7 +223,6 @@ export const useMCPStore = create<MCPState>((set, get) => ({
   // ─── Setters ────────────────────────────────────────────────────────
 
   setSelectedAgent: (agent) => set({ selectedAgent: agent }),
-  setSearchQuery: (query) => set({ searchQuery: query }),
   setAddModalOpen: (open) =>
     set({
       addModalOpen: open,
@@ -201,4 +238,25 @@ export const useMCPStore = create<MCPState>((set, get) => ({
       importModalOpen: open,
       ...(open ? {} : { isImporting: false, error: null }),
     }),
+
+  // ─── Backward Compatibility (deprecated) ────────────────────────────
+  servers: [],
+  fetchServers: async () => {
+    // No-op: use fetchAgentServers(agent) instead
+    console.warn('fetchServers is deprecated, use fetchAgentServers(agent) instead');
+  },
+  addServer: async () => {
+    console.warn('addServer is deprecated, use addAgentServer instead');
+    return null;
+  },
+  updateServer: async () => {
+    console.warn('updateServer is deprecated, use updateAgentServer instead');
+    return null;
+  },
+  removeServer: async () => {
+    console.warn('removeServer is deprecated, use removeAgentServer instead');
+  },
+  toggleAgent: async () => {
+    console.warn('toggleAgent is deprecated, use toggleAgentServer instead');
+  },
 }));

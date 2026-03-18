@@ -6,9 +6,9 @@ import Dashboard from '@/pages/Dashboard';
 import Installed from '@/pages/Installed';
 import SkillDetail from '@/pages/SkillDetail';
 import Discover from '@/pages/Discover';
-import MCPManager from '@/pages/MCPManager';
-import MCPDetail from '@/pages/MCPDetail';
+// Note: MCPManager and MCPDetail removed - MCP management is now within Agent page
 import Agents from '@/pages/Agents';
+import AgentDetail from '@/pages/AgentDetail';
 import Settings from '@/pages/Settings';
 import { useTheme } from '@/hooks/useTheme';
 import { useSettingsStore } from '@/stores/settings';
@@ -62,27 +62,20 @@ function App() {
               </ErrorBoundary>
             }
           />
-          <Route
-            path="/mcp"
-            element={
-              <ErrorBoundary>
-                <MCPManager />
-              </ErrorBoundary>
-            }
-          />
-          <Route
-            path="/mcp/:id"
-            element={
-              <ErrorBoundary>
-                <MCPDetail />
-              </ErrorBoundary>
-            }
-          />
+          {/* Note: /mcp and /mcp/:id routes removed - MCP management is now within Agent page */}
           <Route
             path="/agents"
             element={
               <ErrorBoundary>
                 <Agents />
+              </ErrorBoundary>
+            }
+          />
+          <Route
+            path="/agents/:type"
+            element={
+              <ErrorBoundary>
+                <AgentDetail />
               </ErrorBoundary>
             }
           />

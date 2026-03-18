@@ -166,22 +166,24 @@ Skills Manager v1.0.0 的核心功能，涵盖 **Skills 安装/卸载/更新/发
 
 ---
 
-### 3.3 MCP Server 管理（P0）
+### 3.3 Agent MCP 配置管理（P0）
 
-#### FR-006 MCP Server 列表
+MCP 配置是 Agent 的附属配置，**不作为独立的服务器目录存在**。用户直接在 Agent 下配置 MCP，配置直接写入对应 Agent 的配置文件。
 
-- **描述**: 展示当前配置的所有 MCP Server
+#### FR-006 Agent MCP 配置列表
+
+- **描述**: 在每个 Agent 下展示为其配置的 MCP Server
 - **优先级**: P0
 - **验收标准**:
-  - 显示 Server 名称、类型（stdio/sse/http）、启用状态
-  - 显示已关联的 Agent 列表
-  - 支持按 Agent 筛选
-  - 支持按启用/禁用状态筛选
+  - 在 Agent 详情页/卡片中显示该 Agent 的所有 MCP 配置
+  - 显示 MCP Server 名称、类型（stdio/sse/http）、启用状态
+  - 支持在 Agent 内按启用/禁用状态筛选
   - 实时显示连接状态（已连接/断开/错误）
+  - 无独立的全局 MCP Server 列表视图
 
-#### FR-007 MCP Server 增删改
+#### FR-007 Agent MCP 配置的增删改
 
-- **描述**: 添加、编辑、删除 MCP Server 配置
+- **描述**: 为指定 Agent 添加、编辑、删除 MCP 配置
 - **优先级**: P0
 - **支持的传输类型**:
 
@@ -192,11 +194,13 @@ Skills Manager v1.0.0 的核心功能，涵盖 **Skills 安装/卸载/更新/发
   | `http` | HTTP 端点 | url, headers, method |
 
 - **验收标准**:
+  - 在 Agent 管理页面为指定 Agent 添加 MCP 配置
   - 提供可视化表单配置 MCP Server
   - 支持 JSON 源码编辑模式（高级用户）
-  - 添加后自动写入对应 Agent 配置文件
+  - 添加后**直接**写入对应 Agent 配置文件（无中央注册表）
   - 编辑时实时预览配置效果
   - 删除前显示确认对话框
+  - MCP 配置与 Agent 绑定，删除 Agent 关联时自动清理配置
 
 #### FR-008 MCP 格式自动转换
 
@@ -217,20 +221,21 @@ Skills Manager v1.0.0 的核心功能，涵盖 **Skills 安装/卸载/更新/发
   - 格式转换不丢失信息
   - 支持反向导入（从已有 Agent 配置文件导入 MCP Server）
 
-#### FR-009 MCP Per-App Toggle
+#### FR-009 Agent MCP 启停控制
 
-- **描述**: MCP Server 可独立启用/禁用到每个 Agent
+- **描述**: 在 Agent 内独立启用/禁用其 MCP 配置
 - **优先级**: P1
 - **验收标准**:
-  - 每个 MCP Server 对每个 Agent 有独立的启用/禁用开关
-  - 禁用时从对应 Agent 配置文件中移除，但保留在全局配置中
-  - 批量启用/禁用操作
+  - 每个 Agent 的 MCP 配置有独立的启用/禁用开关
+  - 禁用时直接从该 Agent 配置文件中移除 MCP 条目
+  - 支持为同一 Agent 批量启用/禁用多个 MCP
   - Guard 检查：写入配置前验证 Agent 已安装
-  - 同步失败时保留全局注册表记录，并展示每个 Agent 的同步错误状态
+  - 同步失败时展示该 Agent 的同步错误状态
+  - 无全局 MCP 注册表，配置仅存在于各 Agent 配置文件中
 
-#### FR-009.1 MCP Server 发现
+#### FR-009.1 MCP Server 发现与配置
 
-- **描述**: 在线发现和浏览可用的 MCP Servers
+- **描述**: 在线发现 MCP Servers 并直接配置给指定 Agent
 - **优先级**: P1
 - **发现渠道**:
 
@@ -247,8 +252,9 @@ Skills Manager v1.0.0 的核心功能，涵盖 **Skills 安装/卸载/更新/发
   - 支持按类型筛选（stdio/sse/http）
   - 支持按热门/最新/官方认证筛选
   - 显示支持的 Agents
-  - 一键添加到配置（自动填充 command/url 等字段）
+  - **发现后需要选择目标 Agent 进行配置**，自动填充 command/url 等字段
   - 与 Skills 发现功能集成在统一的"发现"页面，通过标签切换
+  - 发现的 MCP Server 不保存到全局目录，仅作为模板供用户选择后配置给 Agent
 
 ---
 
@@ -391,13 +397,14 @@ Skills Manager v1.0.0 的核心功能，涵盖 **Skills 安装/卸载/更新/发
 - **优先级**: P2
 - **支持格式**:
   - `skills-lock.json`（完整配置，含元数据）
-  - MCP 配置导入/导出（从已有 Agent 配置文件读取）
+  - MCP 配置导入/导出（从各 Agent 配置文件聚合读取）
   - 纯 URL 列表（`.txt`，一行一个，简易分享）
 - **验收标准**:
   - 导出包含所有元数据（Skills + MCP）
-  - MCP 导出默认脱敏 `env`、`headers`、token、password 等敏感值，并提供显式“包含敏感值”确认开关
-  - 导入时自动安装缺失 Skills 并配置 MCP Server
+  - MCP 导出时从各 Agent 配置文件聚合，默认脱敏 `env`、`headers`、token、password 等敏感值，并提供显式“包含敏感值”确认开关
+  - 导入时自动安装缺失 Skills 并将 MCP 配置写入对应 Agent 配置文件
   - 跨平台兼容（路径自动适配）
+  - **注意**: MCP 配置无中央注册表，导出时实时从各 Agent 配置文件读取
 
 ---
 

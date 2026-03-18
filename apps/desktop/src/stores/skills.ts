@@ -85,6 +85,7 @@ interface SkillsState {
 
   // Actions
   fetchSkills: () => Promise<void>;
+  fetchSkillsForAgent: (agent: string) => Promise<Skill[]>;
   installSkill: (
     source: string,
     agents: string[],
@@ -146,6 +147,18 @@ export const useSkillsStore = create<SkillsState>((set, get) => ({
       const errorMsg =
         err instanceof Error ? err.message : typeof err === 'string' ? err : JSON.stringify(err);
       set({ error: errorMsg, isLoading: false });
+    }
+  },
+
+  fetchSkillsForAgent: async (agent: string) => {
+    try {
+      const skills = await invoke<Skill[]>('list_skills', { agent });
+      return skills;
+    } catch (err) {
+      const errorMsg =
+        err instanceof Error ? err.message : typeof err === 'string' ? err : JSON.stringify(err);
+      console.error('Fetch skills for agent error:', errorMsg);
+      return [];
     }
   },
 

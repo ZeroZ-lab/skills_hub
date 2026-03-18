@@ -1,6 +1,7 @@
+import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import { Zap, Server } from 'lucide-react';
+import { Zap, Server, ChevronRight } from 'lucide-react';
 import type { AgentStatus } from '@/stores/agents';
 import { getAgentIcon } from '@/lib/agent-icons';
 
@@ -38,6 +39,7 @@ interface AgentCardProps {
 }
 
 export function AgentCard({ agent, className }: AgentCardProps) {
+  const navigate = useNavigate();
   const { config, installed, isOnline, skillCount, mcpCount } = agent;
   const catStyle = getCategoryStyle(config.category);
   const gradientColor = getInitialColor(config.category);
@@ -45,11 +47,20 @@ export function AgentCard({ agent, className }: AgentCardProps) {
   const skillsDir = config.globalSkillsDir || config.skillsDir;
   const IconComponent = getAgentIcon(config.type);
 
+  const handleClick = () => {
+    if (installed) {
+      navigate(`/agents/${config.type}`);
+    }
+  };
+
   return (
     <div
+      onClick={handleClick}
       className={cn(
-        'group rounded-xl border border-border bg-card p-5 transition-all duration-200 hover:border-primary/30 hover:bg-card/80',
+        'group relative rounded-xl border border-border bg-card p-5 transition-all duration-200',
+        installed && 'cursor-pointer hover:border-primary/30 hover:bg-card/80 hover:shadow-md',
         installed && 'ring-1 ring-primary/10',
+        !installed && 'opacity-60',
         className
       )}
     >
@@ -111,6 +122,11 @@ export function AgentCard({ agent, className }: AgentCardProps) {
             </span>
           </div>
         </div>
+
+        {/* Arrow for installed agents */}
+        {installed && (
+          <ChevronRight className="h-5 w-5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+        )}
       </div>
 
       {/* Description */}

@@ -246,20 +246,21 @@ export interface InstallOptions {
 }
 ```
 
-### 3.2 MCP 类型
+### 3.2 MCP 类型（Agent 附属配置）
+
+MCP 配置直接属于 Agent，**无全局注册表**。配置直接存储在各 Agent 的配置文件中。
 
 ```typescript
 // packages/core/src/types/mcp.ts
 
-/** MCP Server 配置 */
-export interface MCPServer {
+/** 单个 Agent 的 MCP Server 配置 */
+export interface AgentMCPServer {
   id: string;                    // 唯一标识
   name: string;                  // 显示名称
   type: 'stdio' | 'sse' | 'http';  // 传输类型
-  enabled: boolean;              // 派生只读状态，等价于 agents.some(binding => binding.enabled)
-  connectionStatus?: 'connected' | 'disconnected' | 'error';  // 运行时连接状态（可选，仅运行时填充）
+  enabled: boolean;              // 是否启用
+  connectionStatus?: 'connected' | 'disconnected' | 'error';  // 运行时连接状态
   config: MCPServerConfig;       // 配置详情
-  agents: MCPAgentBinding[];     // Agent 绑定
   createdAt: Date;
   updatedAt: Date;
 }
@@ -291,51 +292,13 @@ export interface MCPHTTPConfig {
   method?: 'GET' | 'POST';
 }
 
-/** MCP Server 与 Agent 的绑定关系 */
-export interface MCPAgentBinding {
+/** Agent 及其 MCP 配置列表（前端展示用） */
+export interface AgentMCPList {
   agent: AgentType;
-  enabled: boolean;              // Per-App Toggle
-  configPath: string;            // 运行时从 Agent Registry 解析出的实际配置文件路径
-  format: 'json' | 'toml' | 'yaml';  // 运行时从 Agent Registry 解析出的目标格式
-  syncStatus: 'pending' | 'synced' | 'error'; // 同步到该 Agent 的状态
-  lastSyncedAt?: Date;           // 最近一次同步完成时间
-  lastError?: string;            // 最近一次同步失败原因
-}
-
-/** MCP 注册表内持久化的 Agent 绑定状态 */
-export interface MCPRegistryBinding {
-  agent: AgentType;
-  enabled: boolean;
-  syncStatus: 'pending' | 'synced' | 'error';
-  lastSyncedAt?: Date;
-  lastError?: string;
-}
-
-/** 前端写入 MCP 时使用的绑定输入 */
-export interface MCPAgentBindingInput {
-  agent: AgentType;
-  enabled: boolean;
-}
-
-/** MCP 注册表内的持久化条目（不包含运行时派生字段） */
-export interface MCPRegistryServer {
-  id: string;
-  name: string;
-  type: 'stdio' | 'sse' | 'http';
-  config: MCPServerConfig;
-  agents: MCPRegistryBinding[];
-  createdAt: Date;
-  updatedAt: Date;
-}
-```
-
-**持久化约束**: `MCPRegistryServer` 是当前电脑上的 MCP 单一事实来源，允许持久化 `env`、`headers`、token 等本机同步所需字段。`configPath`、`format` 等可由 Agent Registry 推导的字段不写入注册表，而是在运行时按 `agent` 重新解析。导出、分享、备份时默认脱敏这些敏感值，只有用户显式确认时才允许原样导出。
-
-/** MCP 注册表文件（SSOT） */
-```typescript
-export interface MCPRegistryFile {
-  version: 1;
-  servers: Record<string, MCPRegistryServer>;
+  agentDisplayName: string;
+  configPath: string;            // Agent 配置文件路径
+  format: 'json' | 'toml' | 'yaml';
+  servers: AgentMCPServer[];
 }
 
 /** MCP 格式转换映射 */
@@ -521,6 +484,8 @@ export class SkillEngine {
 
 ### 4.2 MCP 服务契约（概念示意）
 
+**注意**: MCP 配置直接属于 Agent，**无全局注册表**。
+
 ```typescript
 // conceptual service contract; actual implementation lives in Rust src-tauri
 
@@ -529,33 +494,48 @@ export class MCPEngine {
   private guardChecker: GuardChecker;
   private agentManager: AgentManager;
 
-  async list(): Promise<MCPServer[]>
-  async add(server: MCPServerInput): Promise<MCPServer>
-  async update(id: string, changes: Partial<MCPServerInput>): Promise<MCPServer>
-  async remove(id: string): Promise<void>
-  async toggleAgent(serverId: string, agent: AgentType, enabled: boolean): Promise<void>
-  async syncToAgent(serverId: string, agent: AgentType): Promise<void>
-  async importFromAgent(agent: AgentType): Promise<MCPServer[]>
+  /** 按 Agent 查询其 MCP 配置 */
+  async listByAgent(agent: AgentType): Promise<AgentMCPServer[]>
+
+  /** 为指定 Agent 添加 MCP 配置 */
+  async addToAgent(agent: AgentType, server: MCPServerInput): Promise<AgentMCPServer>
+
+  /** 更新指定 Agent 的 MCP 配置 */
+  async update(agent: AgentType, id: string, changes: Partial<MCPServerInput>): Promise<AgentMCPServer>
+
+  /** 从指定 Agent 移除 MCP 配置 */
+  async remove(agent: AgentType, id: string): Promise<void>
+
+  /** 启用/禁用指定 Agent 的某个 MCP */
+  async toggle(agent: AgentType, id: string, enabled: boolean): Promise<void>
+
+  /** 从 Agent 配置文件导入 MCP 配置 */
+  async importFromAgent(agent: AgentType): Promise<AgentMCPServer[]>
+
+  /** 聚合查询所有 Agent 的 MCP（用于展示） */
+  async listAllByAgents(): Promise<AgentMCPList[]>
 }
 ```
 
-**add() 流程**:
+**addToAgent() 流程**:
 
 ```
 1. 验证输入参数并生成唯一 ID
-2. 生成统一内部结构（MCPServer）并初始化 agents[].syncStatus = pending
-3. 将 MCPServer 写入全局注册表（~/.skills-manager/mcp-servers.json）
-   └─ `env`、`headers` 等字段可按本机配置原样落盘，用于同步到本机 Agent
-4. 遍历目标 Agents:
-   a. GuardChecker.check(agent)
-      └─ 验证 Agent 已安装
-   b. FormatConverter.toAgentFormat(server, mapping)
-      └─ 将统一格式转换为该 Agent 所需格式
-   c. 读取 Agent 配置文件并合并配置
-   d. 原子写入（临时文件 + rename）
-   e. 回写该 Agent binding 的 syncStatus / lastSyncedAt / lastError
-5. 将最终同步结果再次持久化到全局注册表
+2. GuardChecker.check(agent)
+   └─ 验证目标 Agent 已安装
+3. FormatConverter.toAgentFormat(server, mapping)
+   └─ 将统一格式转换为该 Agent 所需格式
+4. 读取 Agent 配置文件
+5. 合并新的 MCP 配置到现有配置
+6. 原子写入 Agent 配置文件（临时文件 + rename）
+7. 返回添加的 MCP 配置
 ```
+
+**与旧设计的区别**:
+- ❌ 无 `~/.skills-manager/mcp-servers.json` 全局注册表
+- ❌ 无 `syncStatus` / `lastSyncedAt` 等同步状态（直接写入 Agent 配置）
+- ✅ MCP 配置直接读写各 Agent 的配置文件
+- ✅ 每个 MCP 配置绑定到特定 Agent，不存在跨 Agent 共享
 
 ### 4.3 FormatConverter
 
@@ -1034,9 +1014,10 @@ Skills 和 MCP Servers 共享同一个发现页面（`/discover`），通过标�
 │   ├── github-vercel-skills/
 │   └── github-user-repo/
 ├── config.yaml                  # 应用配置
-├── mcp-servers.json             # 全局 MCP 配置
 └── logs/                        # 操作日志
 ```
+
+**注意**: MCP 配置**不**存储在 `~/.skills-manager/` 下，而是直接写入各 Agent 的配置文件（如 `~/.claude.json`、`~/.codex/config.toml` 等）。
 
 ---
 

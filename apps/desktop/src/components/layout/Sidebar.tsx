@@ -4,7 +4,6 @@ import {
   Home,
   Package,
   Compass,
-  Server,
   Bot,
   Settings,
 } from 'lucide-react';
@@ -25,7 +24,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { labelKey: 'nav.dashboard', path: '/', icon: Home },
   { labelKey: 'nav.agents', path: '/agents', icon: Bot, groupKey: 'nav.group.assembly' },
-  { labelKey: 'nav.mcp', path: '/mcp', icon: Server, groupKey: 'nav.group.assembly' },
+  // Note: MCP management is now within Agent detail page, no standalone entry
   { labelKey: 'nav.skills', path: '/installed', icon: Package, groupKey: 'nav.group.assets' },
   { labelKey: 'nav.discover', path: '/discover', icon: Compass, groupKey: 'nav.group.assets' },
   { labelKey: 'nav.settings', path: '/settings', icon: Settings, groupKey: 'nav.group.system' },

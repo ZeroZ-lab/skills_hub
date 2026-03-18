@@ -261,58 +261,55 @@ interface ResolvedSkill {
 
 ---
 
-## 3. MCP 命令
+## 3. MCP 命令（Agent 附属配置）
 
-### 3.1 list_mcp_servers
+**重要变更**: MCP 配置直接属于 Agent，**无全局注册表**。所有 MCP 命令必须指定目标 Agent。
 
-列出所有 MCP Server 配置。
+### 3.1 list_agent_mcp_servers
+
+列出指定 Agent 的 MCP Server 配置。
 
 ```rust
 #[tauri::command]
-async fn list_mcp_servers(
-    agent: Option<String>,
-) -> Result<Vec<MCPServer>, CommandError>
+async fn list_agent_mcp_servers(
+    agent: String,
+) -> Result<Vec<AgentMCPServer>, CommandError>
 ```
 
 **参数**:
 
 | 参数 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| `agent` | `string?` | 否 | 按 Agent 筛选 |
+| `agent` | `string` | 是 | Agent 类型，如 `"claude-code"` |
+
+**说明**:
+- 直接读取 Agent 的配置文件返回 MCP 配置列表
+- 无中央注册表，所有配置实时从 Agent 配置文件中读取
 
 ---
 
-### 3.2 add_mcp_server
+### 3.2 add_agent_mcp_server
 
-添加 MCP Server。
+为指定 Agent 添加 MCP Server 配置。
 
 ```rust
 #[tauri::command]
-async fn add_mcp_server(
+async fn add_agent_mcp_server(
+    agent: String,
     name: String,
     server_type: String,
     config: serde_json::Value,
-    agents: Vec<MCPAgentBindingInput>,
-) -> Result<MCPServer, CommandError>
+) -> Result<AgentMCPServer, CommandError>
 ```
 
 **参数**:
 
 | 参数 | 类型 | 必填 | 说明 |
 |------|------|------|------|
+| `agent` | `string` | 是 | 目标 Agent 类型 |
 | `name` | `string` | 是 | Server 名称 |
 | `server_type` | `string` | 是 | `"stdio"` / `"sse"` / `"http"` |
 | `config` | `object` | 是 | 配置详情（根据 type 不同） |
-| `agents` | `MCPAgentBindingInput[]` | 是 | Agent 绑定列表 |
-
-**MCPAgentBindingInput**:
-
-```rust
-pub struct MCPAgentBindingInput {
-    pub agent: String,     // AgentType，如 "claude-code"
-    pub enabled: bool,     // 初始是否启用到该 Agent
-}
-```
 
 **config 示例（stdio）**:
 
@@ -324,66 +321,79 @@ pub struct MCPAgentBindingInput {
 }
 ```
 
+**说明**:
+- 直接将 MCP 配置写入 Agent 的配置文件（如 `~/.claude.json`）
+- 无全局注册表，无需同步操作
+
 ---
 
-### 3.3 update_mcp_server
+### 3.3 update_agent_mcp_server
 
-更新 MCP Server 配置。
+更新指定 Agent 的 MCP Server 配置。
 
 ```rust
 #[tauri::command]
-async fn update_mcp_server(
+async fn update_agent_mcp_server(
+    agent: String,
     id: String,
     name: Option<String>,
     config: Option<serde_json::Value>,
-    agents: Option<Vec<MCPAgentBindingInput>>,
-) -> Result<MCPServer, CommandError>
+) -> Result<AgentMCPServer, CommandError>
 ```
 
 **说明**:
-- `agents` 省略时表示保留现有 Agent 绑定及同步状态。
-- `agents` 提供时，后端会先更新全局 MCP 注册表，再对目标 Agent 逐个同步并刷新 `syncStatus`。
+- 直接更新 Agent 配置文件中的对应 MCP 条目
+- 所有变更立即写入 Agent 配置文件
 
 ---
 
-### 3.4 remove_mcp_server
+### 3.4 remove_agent_mcp_server
 
-删除 MCP Server。
+从指定 Agent 删除 MCP Server 配置。
 
 ```rust
 #[tauri::command]
-async fn remove_mcp_server(
+async fn remove_agent_mcp_server(
+    agent: String,
     id: String,
 ) -> Result<(), CommandError>
 ```
 
 ---
 
-### 3.5 toggle_mcp_agent
+### 3.5 toggle_agent_mcp_server
 
-切换 MCP Server 对某个 Agent 的启用/禁用状态。
+启用/禁用指定 Agent 的某个 MCP Server。
 
 ```rust
 #[tauri::command]
-async fn toggle_mcp_agent(
-    server_id: String,
+async fn toggle_agent_mcp_server(
     agent: String,
+    id: String,
     enabled: bool,
 ) -> Result<(), CommandError>
 ```
+
+**说明**:
+- 禁用时直接从 Agent 配置文件中移除该 MCP 条目
+- 启用时重新添加（保留原配置）
 
 ---
 
 ### 3.6 import_mcp_from_agent
 
-从已有 Agent 配置文件导入 MCP Server 配置。
+从 Agent 配置文件导入 MCP Server 配置到 Skills Manager（用于展示）。
 
 ```rust
 #[tauri::command]
 async fn import_mcp_from_agent(
     agent: String,
-) -> Result<Vec<MCPServer>, CommandError>
+) -> Result<Vec<AgentMCPServer>, CommandError>
 ```
+
+**说明**:
+- 读取 Agent 配置文件中的现有 MCP 配置
+- 返回的配置仅用于展示，不创建全局注册表条目
 
 ---
 
@@ -714,8 +724,9 @@ interface DeepLinkAction {
 | `update-available` | `{ name, currentHash, latestHash }` | 检测到更新 |
 | `agent-status-changed` | `{ agent, installed }` | Agent 状态变更 |
 | `deep-link-received` | `{ url }` | 收到深度链接 |
-| `mcp-connection-status` | `{ serverId, status }` | MCP 连接状态变更 |
-| `mcp-sync-status` | `{ serverId, agent, syncStatus, lastError? }` | MCP 配置同步状态变更 |
+| `mcp-connection-status` | `{ serverId, agent, status }` | MCP 连接状态变更（按 Agent）|
+
+**注意**: MCP 配置直接写入 Agent 配置文件，无同步状态事件。配置变更通过命令返回值确认。
 
 ---
 

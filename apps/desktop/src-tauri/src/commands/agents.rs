@@ -21,6 +21,17 @@ pub struct AgentConfig {
     pub detect_paths: Option<Vec<String>>,
     #[serde(rename = "supportsMcp")]
     pub supports_mcp: bool,
+    #[serde(rename = "mcpConfig")]
+    pub mcp_config: Option<MCPConfigMapping>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MCPConfigMapping {
+    pub format: String,
+    #[serde(rename = "configPath")]
+    pub config_path: String,
+    #[serde(rename = "configKey")]
+    pub config_key: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -125,6 +136,11 @@ fn build_agent_status_list() -> Vec<AgentStatus> {
                         Some(entry.detect_paths)
                     },
                     supports_mcp: entry.mcp_config.is_some(),
+                    mcp_config: entry.mcp_config.map(|m| MCPConfigMapping {
+                        format: m.format,
+                        config_path: m.config_path,
+                        config_key: m.config_key,
+                    }),
                 },
                 installed,
                 is_online: installed,
@@ -204,6 +220,11 @@ pub async fn get_agent_detail(agent: String) -> Result<AgentDetail, CommandError
                 Some(entry.detect_paths)
             },
             supports_mcp: entry.mcp_config.is_some(),
+            mcp_config: entry.mcp_config.map(|m| MCPConfigMapping {
+                format: m.format,
+                config_path: m.config_path,
+                config_key: m.config_key,
+            }),
         },
         installed,
         is_online: installed,

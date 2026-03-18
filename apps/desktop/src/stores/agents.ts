@@ -11,6 +11,11 @@ export interface AgentConfig {
   detectCommand: string | null;
   detectPaths: string[] | null;
   supportsMcp: boolean;
+  mcpConfig?: {
+    format: 'json' | 'toml' | 'yaml';
+    configPath: string;
+    configKey: string;
+  };
 }
 
 export interface AgentStatus {
