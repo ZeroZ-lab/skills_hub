@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import {
+  Boxes,
   GitBranch,
   HardDrive,
   MoreVertical,
@@ -14,7 +15,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { Skill, UpdateCheckResult } from '@/stores/skills';
-import { getAgentColor, getAgentDisplayName } from '@/stores/agents';
 import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AddToAgentsModal } from './AddToAgentsModal';
@@ -45,6 +45,7 @@ export function SkillCard({
   const [menuOpen, setMenuOpen] = useState(false);
   const [showAddToAgents, setShowAddToAgents] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const assemblyCount = skill.installs.length;
 
   // Close menu on outside click
   useEffect(() => {
@@ -139,18 +140,13 @@ export function SkillCard({
           )}
         </div>
 
-        {/* Installed agents */}
-        {skill.installs.length > 0 && (
-          <div className="mt-1 flex flex-wrap items-center gap-1.5">
-            {skill.installs.map((install) => (
-              <Badge
-                key={install.agent}
-                variant="outline"
-                className={cn('text-[10px] px-1.5 py-0', getAgentColor(install.agent))}
-              >
-                {getAgentDisplayName(install.agent)}
-              </Badge>
-            ))}
+        {/* Assembly summary */}
+        {assemblyCount > 0 && (
+          <div className="mt-1 flex items-center gap-2 text-[11px] text-muted-foreground">
+            <Boxes className="h-3.5 w-3.5" />
+            <span>
+              Assembled to {assemblyCount} target{assemblyCount === 1 ? '' : 's'}
+            </span>
           </div>
         )}
       </div>

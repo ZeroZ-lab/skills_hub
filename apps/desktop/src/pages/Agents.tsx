@@ -31,10 +31,8 @@ export default function Agents() {
   const filterOptions = [
     { value: 'all', label: t('pages.agents.filter.all') },
     { value: 'installed', label: t('pages.agents.filter.installed') },
-    { value: 'CLI', label: 'CLI' },
-    { value: 'IDE', label: 'IDE' },
-    { value: 'Web', label: 'Web' },
-    { value: 'Desktop', label: 'Desktop' },
+    { value: 'universal', label: 'Shared Skills' },
+    { value: 'non-universal', label: 'Agent-Specific' },
   ];
 
   function AgentCardSkeleton() {

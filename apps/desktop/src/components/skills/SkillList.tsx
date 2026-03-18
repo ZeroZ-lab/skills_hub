@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import { SkillCard } from './SkillCard';
 import type { Skill, UpdateCheckResult } from '@/stores/skills';
 
-type SortKey = 'name' | 'date' | 'agents';
+type SortKey = 'name' | 'date' | 'assemblies';
 
 interface SkillListProps {
   skills: Skill[];
@@ -17,7 +17,7 @@ interface SkillListProps {
 const SORT_OPTIONS: { key: SortKey; label: string; icon: React.ElementType }[] = [
   { key: 'name', label: 'Name', icon: ArrowDownAZ },
   { key: 'date', label: 'Updated', icon: Calendar },
-  { key: 'agents', label: 'Agents', icon: Hash },
+  { key: 'assemblies', label: 'Assemblies', icon: Hash },
 ];
 
 function sortSkills(skills: Skill[], key: SortKey, asc: boolean): Skill[] {
@@ -27,7 +27,7 @@ function sortSkills(skills: Skill[], key: SortKey, asc: boolean): Skill[] {
         return a.name.localeCompare(b.name);
       case 'date':
         return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
-      case 'agents':
+      case 'assemblies':
         return b.installs.length - a.installs.length;
       default:
         return 0;
@@ -51,7 +51,7 @@ export function SkillList({ skills, updateResults, onRemove, onUpdate }: SkillLi
         </div>
         <h3 className="text-lg font-medium text-foreground mb-1">No skills found</h3>
         <p className="text-sm text-muted-foreground max-w-sm">
-          No skills match your current filters. Try adjusting your search or install a new skill.
+          No assets match your current search. Try adjusting your query or add a new asset.
         </p>
       </div>
     );
@@ -87,7 +87,7 @@ export function SkillList({ skills, updateResults, onRemove, onUpdate }: SkillLi
           </Button>
         ))}
         <span className="ml-auto text-xs text-muted-foreground">
-          {skills.length} skill{skills.length !== 1 ? 's' : ''}
+          {skills.length} asset{skills.length !== 1 ? 's' : ''}
         </span>
       </div>
 

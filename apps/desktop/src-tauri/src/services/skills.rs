@@ -544,24 +544,27 @@ impl SkillEngine {
             .skills
             .iter()
             .filter(|(name, entry)| {
+                let installs = visible_installs(entry);
+                if installs.is_empty() {
+                    return false;
+                }
+
                 // Filter by agent
                 if let Some(agent_filter) = agent {
                     // Special handling for "universal" - match any universal agent
                     if agent_filter == "universal" {
                         use crate::agent::registry::is_universal_agent;
-                        if !entry.installs.iter().any(|i| is_universal_agent(&i.agent)) {
+                        if !installs.iter().any(|i| is_universal_agent(&i.agent)) {
                             return false;
                         }
-                    } else {
-                        if !entry.installs.iter().any(|i| i.agent == agent_filter) {
-                            return false;
-                        }
+                    } else if !installs.iter().any(|i| i.agent == agent_filter) {
+                        return false;
                     }
                 }
 
                 // Filter by scope
                 if let Some(scope_filter) = scope {
-                    if !entry.installs.iter().any(|i| i.scope == scope_filter) {
+                    if !installs.iter().any(|i| i.scope == scope_filter) {
                         return false;
                     }
                 }
@@ -878,6 +881,25 @@ fn list_files_recursive(root: &Path, current: &Path) -> Vec<String> {
     files
 }
 
+fn is_supported_install_agent(agent: &str) -> bool {
+    agent == "global" || get_agent(agent).is_some()
+}
+
+fn visible_installs(entry: &GlobalSkillEntry) -> Vec<AgentInstallRecord> {
+    entry
+        .installs
+        .iter()
+        .filter(|i| is_supported_install_agent(&i.agent))
+        .map(|i| AgentInstallRecord {
+            agent: i.agent.clone(),
+            scope: i.scope.clone(),
+            mode: i.mode.clone(),
+            installed_path: i.installed_path.clone(),
+            installed_at: i.installed_at.clone(),
+        })
+        .collect()
+}
+
 /// Convert a lock file entry to a `Skill` struct for the frontend.
 fn lock_entry_to_skill(name: &str, entry: &GlobalSkillEntry) -> Skill {
     let source = Source {
@@ -888,17 +910,7 @@ fn lock_entry_to_skill(name: &str, entry: &GlobalSkillEntry) -> Skill {
         provider: entry.source.provider.clone(),
     };
 
-    let installs: Vec<AgentInstallRecord> = entry
-        .installs
-        .iter()
-        .map(|i| AgentInstallRecord {
-            agent: i.agent.clone(),
-            scope: i.scope.clone(),
-            mode: i.mode.clone(),
-            installed_path: i.installed_path.clone(),
-            installed_at: i.installed_at.clone(),
-        })
-        .collect();
+    let installs = visible_installs(entry);
 
     Skill {
         id: uuid::Uuid::new_v4().to_string(),

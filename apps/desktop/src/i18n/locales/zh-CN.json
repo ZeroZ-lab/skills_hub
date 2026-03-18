@@ -1,16 +1,18 @@
 {
   "app": {
-    "name": "Skills Manager",
+    "name": "Agent 装配台",
     "version": "v0.3.0"
   },
   "nav": {
     "dashboard": "仪表盘",
-    "discover": "发现",
-    "skills": "Skills 管理",
-    "mcp": "MCP 管理",
-    "agents": "Agents",
+    "discover": "发现市场",
+    "skills": "Skills 资产库",
+    "mcp": "MCP 装配",
+    "agents": "Agent 装配",
     "settings": "设置",
     "group": {
+      "assets": "资产",
+      "assembly": "装配",
       "management": "管理",
       "system": "系统"
     }
@@ -59,7 +61,7 @@
     "offline": "离线",
     "agents": "agents",
     "across": "跨",
-    "addToAgents": "添加到其他 Agents",
+    "addToAgents": "装配到更多 Agents",
     "status": "状态",
     "name": "名称",
     "description": "描述",
@@ -159,20 +161,21 @@
     "archived": "已归档",
     "universal": "通用",
     "shared": "共享",
+    "sharedAssembly": "共享装配",
     "sharedDirectory": "共享目录",
     "views": {
-      "skillsView": "Skills 视图",
-      "agentsView": "Agents 视图",
-      "serversView": "Servers 视图"
+      "skillsView": "资产视图",
+      "agentsView": "Agent 装配视图",
+      "serversView": "MCP 资产视图"
     }
   },
   "pages": {
     "dashboard": {
       "title": "仪表盘",
-      "description": "查看 Skills、Agents 和 MCP Servers 的概览",
+      "description": "查看本地资产、Agent 装配和 MCP 状态概览",
       "stats": {
-        "skillsInstalled": "已安装 Skills",
-        "agentsActive": "活跃 Agents",
+        "skillsInstalled": "本地 Skills 资产",
+        "agentsActive": "已装配 Agents",
         "mcpServers": "MCP 服务器",
         "updatesAvailable": "可用更新",
         "security": "安全"
@@ -182,8 +185,8 @@
       "updates": "更新",
       "quickActions": {
         "title": "快捷操作",
-        "installSkill": "安装 Skill",
-        "addMCPServer": "添加 MCP 服务器",
+        "installSkill": "添加资产",
+        "addMCPServer": "装配 MCP",
         "detectAgents": "检测 Agents",
         "detecting": "检测中...",
         "checkUpdates": "检查更新",
@@ -195,9 +198,9 @@
         "empty": "暂无活动"
       },
       "installedSkills": {
-        "title": "已安装 Skills 概览",
+        "title": "本地 Skills 资产",
         "empty": "尚未安装 skills",
-        "emptyDesc": "浏览发现页面查找 skills",
+        "emptyDesc": "通过发现市场把物料下载到本地",
         "noDescription": "无描述"
       },
       "topSkills": {
@@ -205,21 +208,21 @@
       }
     },
     "discover": {
-      "title": "发现",
-      "description": "搜索和发现 AI Agent Skills",
-      "searchPlaceholder": "搜索 skills...",
+      "title": "发现市场",
+      "description": "从社区与市场发现可入库的 Skills 和 MCP 物料",
+      "searchPlaceholder": "搜索物料...",
       "searching": "搜索中...",
       "noResults": "未找到结果",
-      "noResultsDesc": "没有匹配搜索词的 skills。尝试调整搜索词。",
+      "noResultsDesc": "没有匹配搜索词的物料。尝试调整搜索词。",
       "clearSearch": "清除搜索",
-      "discoverSkills": "发现 Skills",
-      "loadingDesc": "正在加载热门 skills...",
-      "install": "安装"
+      "discoverSkills": "发现可入库物料",
+      "loadingDesc": "正在加载推荐物料...",
+      "install": "加入资产库"
     },
     "skills": {
-      "title": "Skills 管理",
-      "description": "管理已安装的 skills",
-      "searchPlaceholder": "搜索 skills...",
+      "title": "Skills 资产库",
+      "description": "管理已下载到本地的 Skills 资产，并为 Agent 装配做准备",
+      "searchPlaceholder": "搜索本地 skills 资产...",
       "filter": {
         "allAgents": "全部 Agents",
         "allScopes": "全部作用域",
@@ -228,9 +231,9 @@
       },
       "actions": {
         "sync": "同步",
-        "import": "导入",
-        "checkUpdates": "检查更新",
-        "installSkill": "安装 Skill"
+        "import": "导入本地资产",
+        "checkUpdates": "检查资产更新",
+        "installSkill": "添加资产"
       },
       "table": {
         "name": "名称",
@@ -240,26 +243,26 @@
         "actions": "操作"
       },
       "empty": {
-        "title": "暂无 Skills",
-        "description": "点击「安装 Skill」按钮添加你的第一个 skill"
+        "title": "资产库为空",
+        "description": "从发现市场或本地来源把第一个 Skill 资产加入仓库"
       },
       "installModal": {
-        "title": "安装 Skill",
+        "title": "添加 Skill 资产",
         "sourceLabel": "来源",
         "sourcePlaceholder": "输入 GitHub 地址或本地路径...",
-        "agentsLabel": "安装到",
+        "agentsLabel": "装配到",
         "modeLabel": "安装模式",
         "symlink": "符号链接 (推荐)",
         "copy": "复制",
         "scopeLabel": "作用域",
         "global": "全局",
         "project": "项目",
-        "installing": "安装中...",
-        "install": "安装"
+        "installing": "处理中...",
+        "install": "添加并装配"
       },
       "importModal": {
-        "title": "导入 Skills",
-        "description": "从系统中已安装的 agent 目录扫描并导入 skills",
+        "title": "导入 Skills 资产",
+        "description": "从系统中已安装的 agent 目录扫描并导入本地 skills",
         "scanAll": "扫描所有目录",
         "scanAllDesc": "扫描 ~/.agents/skills、~/.claude/skills 等常见目录",
         "orFromAgent": "或从特定 Agent 导入：",
@@ -278,8 +281,8 @@
       }
     },
     "mcp": {
-      "title": "MCP 管理",
-      "description": "管理 Model Context Protocol 服务器配置",
+      "title": "MCP 装配",
+      "description": "管理本地 MCP 资产，并把它们装配到特定 Agent",
       "searchPlaceholder": "搜索 MCP 服务器...",
       "filter": {
         "allTypes": "全部类型",
@@ -288,8 +291,8 @@
         "http": "HTTP"
       },
       "actions": {
-        "import": "导入",
-        "addServer": "添加服务器"
+        "import": "导入现有 MCP",
+        "addServer": "新增 MCP 资产"
       },
       "table": {
         "name": "名称",
@@ -302,10 +305,10 @@
         "allAgents": "全部 Agents"
       },
       "empty": {
-        "title": "暂无 MCP 服务器配置",
-        "description": "MCP 服务器可以为你的 AI agents 扩展外部工具和数据源。添加你的第一个服务器或从 agent 导入现有配置。",
+        "title": "暂无 MCP 资产",
+        "description": "MCP 是装配 Agent 的一种能力来源。添加你的第一个 MCP 资产，或从现有 Agent 导入配置。",
         "importButton": "从 Agent 导入",
-        "addButton": "添加你的第一个 MCP 服务器"
+        "addButton": "添加你的第一个 MCP 资产"
       },
       "noResults": {
         "title": "未找到服务器",
@@ -323,17 +326,17 @@
         "pending": "待同步"
       },
       "addModal": {
-        "title": "添加 MCP 服务器",
+        "title": "新增 MCP 资产",
         "nameLabel": "名称",
         "typeLabel": "类型",
         "configLabel": "配置",
-        "agentsLabel": "关联 Agents",
+        "agentsLabel": "装配到 Agents",
         "adding": "添加中...",
         "add": "添加"
       },
       "importModal": {
         "title": "导入 MCP 配置",
-        "description": "从已安装的 agent 导入 MCP 服务器配置",
+        "description": "从已安装的 agent 导入可复用的 MCP 配置",
         "selectAgent": "选择 Agent",
         "noAgents": "未检测到已安装的 agents",
         "importing": "导入中...",
@@ -344,8 +347,8 @@
       }
     },
     "agents": {
-      "title": "Agents",
-      "description": "管理和检测已安装的 AI agents",
+      "title": "Agent 装配",
+      "description": "围绕特定 Agent 组织本地 Skills 与 MCP 资产",
       "searchPlaceholder": "搜索 agents...",
       "detecting": "检测中...",
       "reDetect": "重新检测",

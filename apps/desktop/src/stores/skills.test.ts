@@ -37,8 +37,8 @@ describe('Skills Store', () => {
 
   it('should set selected agent', () => {
     const { setSelectedAgent } = useSkillsStore.getState();
-    setSelectedAgent('claude');
-    expect(useSkillsStore.getState().selectedAgent).toBe('claude');
+    setSelectedAgent('claude-code');
+    expect(useSkillsStore.getState().selectedAgent).toBe('claude-code');
   });
 
   it('should set search query', () => {

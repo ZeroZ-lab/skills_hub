@@ -6,6 +6,7 @@ import {
   Bot,
   Server,
   ArrowUpCircle,
+  ArrowRight,
   Shield,
   Plus,
   ServerCog,
@@ -20,7 +21,6 @@ import { cn } from '@/lib/utils';
 import { Header } from '@/components/layout/Header';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { QuickAction } from '@/components/dashboard/QuickAction';
-import { RecentActivity } from '@/components/dashboard/RecentActivity';
 import { AgentStatusList } from '@/components/dashboard/AgentStatusList';
 import { useSkillsStore } from '@/stores/skills';
 import { useAgentsStore, getAgentColor, getAgentDisplayName } from '@/stores/agents';
@@ -58,6 +58,8 @@ export default function Dashboard() {
 
   // Top skills by install count
   const topSkills = [...skills].sort((a, b) => b.installs.length - a.installs.length).slice(0, 5);
+  const totalInstalls = skills.reduce((sum, skill) => sum + skill.installs.length, 0);
+  const onlineAgentsCount = installedAgents.filter((a) => a.isOnline).length;
 
   // ─── Render ─────────────────────────────────────────────────────────────
 
@@ -117,7 +119,7 @@ export default function Dashboard() {
           </div>
 
           {/* ── Quick Actions ───────────────────────────────────────────── */}
-          <div className="flex flex-wrap gap-3">
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
             <QuickAction
               label={t('pages.dashboard.quickActions.installSkill')}
               icon={Plus}
@@ -164,19 +166,61 @@ export default function Dashboard() {
             />
           </div>
 
-          {/* ── Two-Column Layout ────────────────────────────────────────── */}
-          <div className="grid gap-6 lg:grid-cols-3">
-            {/* Left Column (2/3) */}
-            <div className="space-y-6 lg:col-span-2">
-              {/* Recent Activity */}
-              <RecentActivity skills={skills} />
+          {/* ── Main Layout ─────────────────────────────────────────────── */}
+          <div className="grid gap-6 xl:grid-cols-[minmax(0,1.7fr)_minmax(320px,1fr)]">
+            <div className="space-y-6">
+              <div className="grid gap-4 md:grid-cols-3">
+                <OverviewCard
+                  icon={Bot}
+                  title="Agent workspace"
+                  value={`${onlineAgentsCount}/${installedAgents.length || 0}`}
+                  description={
+                    installedAgents.length > 0
+                      ? `${onlineAgentsCount} agents are ready for assembly`
+                      : 'Run detection to connect your local agent targets'
+                  }
+                />
+                <OverviewCard
+                  icon={Package}
+                  title="Local assets"
+                  value={`${skills.length}`}
+                  description={
+                    skills.length > 0
+                      ? `${totalInstalls} assembled installs across ${allAgentTypes.size} agent types`
+                      : 'Add your first asset from the library or market'
+                  }
+                />
+                <OverviewCard
+                  icon={Shield}
+                  title="Assembly health"
+                  value={updatesCount > 0 ? `${updatesCount}` : 'OK'}
+                  description={
+                    updatesCount > 0
+                      ? 'Asset or dependency updates are ready to review'
+                      : 'Your current assembly setup looks stable'
+                  }
+                />
+              </div>
 
               {/* Installed Skills Overview */}
-              <div className="rounded-xl border border-border bg-card">
-                <div className="border-b border-border px-6 py-4">
-                  <h3 className="text-sm font-semibold text-foreground">
-                    {t('pages.dashboard.installedSkills.title')}
-                  </h3>
+              <div className="overflow-hidden rounded-xl border border-border bg-card">
+                <div className="flex flex-col gap-4 border-b border-border px-6 py-5 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="space-y-1">
+                    <h3 className="text-sm font-semibold text-foreground">
+                      {t('pages.dashboard.installedSkills.title')}
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      Local skill assets ready to be assembled onto your agents.
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={() => navigate('/installed')}
+                    className="inline-flex items-center gap-1 self-start text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    Open library
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </button>
                 </div>
 
                 {topSkills.length === 0 ? (
@@ -198,16 +242,21 @@ export default function Dashboard() {
                         <button
                           key={skill.name}
                           onClick={() => navigate(`/installed/${encodeURIComponent(skill.name)}`)}
-                          className="flex w-full items-center gap-4 px-6 py-3.5 text-left transition-colors hover:bg-accent/50"
+                          className="flex w-full items-center gap-4 px-6 py-4 text-left transition-colors hover:bg-accent/50"
                         >
-                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10">
                             <Package className="h-4 w-4 text-primary" />
                           </div>
 
                           <div className="min-w-0 flex-1">
-                            <p className="truncate text-sm font-medium text-foreground">
-                              {skill.name}
-                            </p>
+                            <div className="flex items-center gap-2">
+                              <p className="truncate text-sm font-medium text-foreground">
+                                {skill.name}
+                              </p>
+                              <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
+                                {skill.installs.length} install{skill.installs.length === 1 ? '' : 's'}
+                              </span>
+                            </div>
                             <p className="mt-0.5 truncate text-xs text-muted-foreground">
                               {skill.description ||
                                 t('pages.dashboard.installedSkills.noDescription')}
@@ -233,29 +282,28 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Right Column (1/3) */}
             <div className="space-y-6">
               {/* Agent Status */}
               <AgentStatusList agents={agents} />
 
               {/* Quick Stats */}
-              <div className="rounded-xl border border-border bg-card">
-                <div className="border-b border-border px-6 py-4">
-                  <h3 className="text-sm font-semibold text-foreground">Quick Stats</h3>
+              <div className="overflow-hidden rounded-xl border border-border bg-card">
+                <div className="border-b border-border px-6 py-5">
+                  <h3 className="text-sm font-semibold text-foreground">Assembly Summary</h3>
                 </div>
 
-                <div className="space-y-1 p-2">
+                <div className="grid gap-px bg-border sm:grid-cols-2 xl:grid-cols-1">
                   <QuickStatRow
                     icon={FolderOpen}
-                    label="Skills directories"
+                    label="Shared asset dirs"
                     value={String(allAgentTypes.size)}
                   />
                   <QuickStatRow
                     icon={Package}
-                    label="Total installs"
-                    value={String(skills.reduce((sum, s) => sum + s.installs.length, 0))}
+                    label="Assembled installs"
+                    value={String(totalInstalls)}
                   />
-                  <QuickStatRow icon={HardDrive} label="Cache status" value="Healthy" />
+                  <QuickStatRow icon={HardDrive} label="Local cache" value="Healthy" />
                   <QuickStatRow
                     icon={ArrowUpCircle}
                     label="Pending updates"
@@ -283,10 +331,43 @@ function QuickStatRow({
   value: string;
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-lg px-4 py-2.5">
-      <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
-      <span className="flex-1 text-sm text-muted-foreground">{label}</span>
-      <span className="text-sm font-medium text-foreground">{value}</span>
+    <div className="flex items-center gap-3 bg-card px-5 py-4">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-secondary/60">
+        <Icon className="h-4 w-4 text-muted-foreground" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-xs uppercase tracking-[0.08em] text-muted-foreground">{label}</p>
+        <p className="mt-1 text-base font-semibold text-foreground">{value}</p>
+      </div>
+    </div>
+  );
+}
+
+function OverviewCard({
+  icon: Icon,
+  title,
+  value,
+  description,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  value: string;
+  description: string;
+}) {
+  return (
+    <div className="rounded-xl border border-border bg-card p-5">
+      <div className="flex items-start justify-between gap-4">
+        <div className="space-y-2">
+          <p className="text-xs font-medium uppercase tracking-[0.08em] text-muted-foreground">
+            {title}
+          </p>
+          <p className="text-2xl font-semibold text-foreground">{value}</p>
+          <p className="text-xs leading-5 text-muted-foreground">{description}</p>
+        </div>
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-secondary/70">
+          <Icon className="h-4.5 w-4.5 text-foreground" />
+        </div>
+      </div>
     </div>
   );
 }

@@ -1,16 +1,18 @@
 {
   "app": {
-    "name": "Skills Manager",
+    "name": "Agent Workshop",
     "version": "v0.3.0"
   },
   "nav": {
     "dashboard": "Dashboard",
-    "discover": "Discover",
-    "skills": "Skills",
-    "mcp": "MCP",
-    "agents": "Agents",
+    "discover": "Market",
+    "skills": "Skill Library",
+    "mcp": "MCP Assembly",
+    "agents": "Agent Assembly",
     "settings": "Settings",
     "group": {
+      "assets": "Assets",
+      "assembly": "Assembly",
       "management": "Management",
       "system": "System"
     }
@@ -59,6 +61,7 @@
     "offline": "offline",
     "agents": "agents",
     "across": "across",
+    "addToAgents": "Assemble to More Agents",
     "status": "Status",
     "name": "Name",
     "description": "Description",
@@ -157,15 +160,23 @@
     "maintained": "Maintained",
     "archived": "Archived",
     "chinese": "中文",
-    "english": "English"
+    "english": "English",
+    "shared": "Shared",
+    "sharedAssembly": "Shared Assembly",
+    "sharedDirectory": "Shared Directory",
+    "views": {
+      "skillsView": "Asset View",
+      "agentsView": "Agent Assembly View",
+      "serversView": "MCP Asset View"
+    }
   },
   "pages": {
     "dashboard": {
       "title": "Dashboard",
-      "description": "Overview of your Skills, Agents and MCP Servers",
+      "description": "Overview of your local assets, agent assembly, and MCP status",
       "stats": {
-        "skillsInstalled": "Skills Installed",
-        "agentsActive": "Active Agents",
+        "skillsInstalled": "Local Skill Assets",
+        "agentsActive": "Assembled Agents",
         "mcpServers": "MCP Servers",
         "updatesAvailable": "Updates Available",
         "security": "Security"
@@ -175,8 +186,8 @@
       "updates": "updates",
       "quickActions": {
         "title": "Quick Actions",
-        "installSkill": "Install Skill",
-        "addMCPServer": "Add MCP Server",
+        "installSkill": "Add Asset",
+        "addMCPServer": "Assemble MCP",
         "detectAgents": "Detect Agents",
         "detecting": "Detecting...",
         "checkUpdates": "Check Updates",
@@ -188,9 +199,9 @@
         "empty": "No recent activity"
       },
       "installedSkills": {
-        "title": "Installed Skills Overview",
+        "title": "Local Skill Assets",
         "empty": "No skills installed yet",
-        "emptyDesc": "Browse the discovery page to find skills",
+        "emptyDesc": "Use the market to download assets into your local library",
         "noDescription": "No description"
       },
       "topSkills": {
@@ -198,21 +209,21 @@
       }
     },
     "discover": {
-      "title": "Discover",
-      "description": "Search and discover AI Agent Skills",
-      "searchPlaceholder": "Search skills...",
+      "title": "Market",
+      "description": "Find Skills and MCP assets from the community and bring them into your local library",
+      "searchPlaceholder": "Search assets...",
       "searching": "Searching...",
       "noResults": "No results found",
-      "noResultsDesc": "No skills match your search. Try adjusting your search terms.",
+      "noResultsDesc": "No assets match your search. Try adjusting your search terms.",
       "clearSearch": "Clear search",
-      "discoverSkills": "Discover Skills",
-      "loadingDesc": "Loading popular skills...",
-      "install": "Install"
+      "discoverSkills": "Discover Assets",
+      "loadingDesc": "Loading recommended assets...",
+      "install": "Add to Library"
     },
     "skills": {
-      "title": "Skills",
-      "description": "Manage your installed skills",
-      "searchPlaceholder": "Search skills...",
+      "title": "Skill Library",
+      "description": "Manage your downloaded skill assets and prepare them for agent assembly",
+      "searchPlaceholder": "Search local skill assets...",
       "filter": {
         "allAgents": "All Agents",
         "allScopes": "All Scopes",
@@ -221,9 +232,9 @@
       },
       "actions": {
         "sync": "Sync",
-        "import": "Import",
-        "checkUpdates": "Check Updates",
-        "installSkill": "Install Skill"
+        "import": "Import Local Assets",
+        "checkUpdates": "Check Asset Updates",
+        "installSkill": "Add Asset"
       },
       "table": {
         "name": "Name",
@@ -233,26 +244,26 @@
         "actions": "Actions"
       },
       "empty": {
-        "title": "No Skills",
-        "description": "Click \"Install Skill\" to add your first skill"
+        "title": "Library is Empty",
+        "description": "Bring your first skill asset into the library from the market or a local source"
       },
       "installModal": {
-        "title": "Install Skill",
+        "title": "Add Skill Asset",
         "sourceLabel": "Source",
         "sourcePlaceholder": "Enter GitHub URL or local path...",
-        "agentsLabel": "Install to",
+        "agentsLabel": "Assemble to",
         "modeLabel": "Install Mode",
         "symlink": "Symlink (Recommended)",
         "copy": "Copy",
         "scopeLabel": "Scope",
         "global": "Global",
         "project": "Project",
-        "installing": "Installing...",
-        "install": "Install"
+        "installing": "Processing...",
+        "install": "Add and Assemble"
       },
       "importModal": {
-        "title": "Import Skills",
-        "description": "Scan and import skills from system directories",
+        "title": "Import Skill Assets",
+        "description": "Scan installed agent directories and import local skills",
         "scanAll": "Scan All Directories",
         "scanAllDesc": "Scan ~/.agents/skills, ~/.claude/skills and other common directories",
         "orFromAgent": "Or import from specific Agent:",
@@ -271,8 +282,8 @@
       }
     },
     "mcp": {
-      "title": "MCP",
-      "description": "Manage Model Context Protocol server configurations",
+      "title": "MCP Assembly",
+      "description": "Manage local MCP assets and assemble them onto specific agents",
       "searchPlaceholder": "Search MCP servers...",
       "filter": {
         "allTypes": "All Types",
@@ -281,8 +292,8 @@
         "http": "HTTP"
       },
       "actions": {
-        "import": "Import",
-        "addServer": "Add Server"
+        "import": "Import Existing MCP",
+        "addServer": "Add MCP Asset"
       },
       "table": {
         "name": "Name",
@@ -295,10 +306,10 @@
         "allAgents": "All Agents"
       },
       "empty": {
-        "title": "No MCP servers configured",
-        "description": "MCP servers extend your AI agents with external tools and data sources. Add your first server or import existing configurations from an agent.",
+        "title": "No MCP assets yet",
+        "description": "MCP is one way to assemble an agent. Add your first MCP asset or import an existing configuration from an agent.",
         "importButton": "Import from Agent",
-        "addButton": "Add your first MCP server"
+        "addButton": "Add your first MCP asset"
       },
       "noResults": {
         "title": "No servers found",
@@ -316,17 +327,17 @@
         "pending": "Pending"
       },
       "addModal": {
-        "title": "Add MCP Server",
+        "title": "Add MCP Asset",
         "nameLabel": "Name",
         "typeLabel": "Type",
         "configLabel": "Config",
-        "agentsLabel": "Associated Agents",
+        "agentsLabel": "Assemble to Agents",
         "adding": "Adding...",
         "add": "Add"
       },
       "importModal": {
         "title": "Import MCP Config",
-        "description": "Import MCP server configurations from installed agents",
+        "description": "Import reusable MCP configurations from installed agents",
         "selectAgent": "Select Agent",
         "noAgents": "No installed agents detected",
         "importing": "Importing...",
@@ -337,8 +348,8 @@
       }
     },
     "agents": {
-      "title": "Agents",
-      "description": "Manage and detect installed AI agents",
+      "title": "Agent Assembly",
+      "description": "Organize local Skills and MCP assets around a specific agent",
       "searchPlaceholder": "Search agents...",
       "detecting": "Detecting...",
       "reDetect": "Re-detect",

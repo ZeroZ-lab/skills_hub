@@ -24,10 +24,10 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { labelKey: 'nav.dashboard', path: '/', icon: Home },
-  { labelKey: 'nav.discover', path: '/discover', icon: Compass, badge: 'New' },
-  { labelKey: 'nav.skills', path: '/installed', icon: Package, groupKey: 'nav.group.management' },
-  { labelKey: 'nav.mcp', path: '/mcp', icon: Server, groupKey: 'nav.group.management' },
-  { labelKey: 'nav.agents', path: '/agents', icon: Bot, groupKey: 'nav.group.system' },
+  { labelKey: 'nav.agents', path: '/agents', icon: Bot, groupKey: 'nav.group.assembly' },
+  { labelKey: 'nav.mcp', path: '/mcp', icon: Server, groupKey: 'nav.group.assembly' },
+  { labelKey: 'nav.skills', path: '/installed', icon: Package, groupKey: 'nav.group.assets' },
+  { labelKey: 'nav.discover', path: '/discover', icon: Compass, groupKey: 'nav.group.assets' },
   { labelKey: 'nav.settings', path: '/settings', icon: Settings, groupKey: 'nav.group.system' },
 ];
 
@@ -41,7 +41,7 @@ export function Sidebar() {
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
           <Package className="h-4 w-4 text-primary-foreground" />
         </div>
-        <span className="text-lg font-semibold">Skills Manager</span>
+        <span className="text-lg font-semibold">{t('app.name')}</span>
       </div>
 
       <Separator />

@@ -9,10 +9,11 @@ import { getAgentIcon } from '@/lib/agent-icons';
 // ─── Color helpers for initials ─────────────────────────────────────────────
 
 const INITIAL_COLORS: Record<string, string> = {
-  claude: 'bg-orange-500/20 text-orange-400',
-  cursor: 'bg-blue-500/20 text-blue-400',
-  copilot: 'bg-green-500/20 text-green-400',
-  windsurf: 'bg-purple-500/20 text-purple-400',
+  'claude-code': 'bg-orange-500/20 text-orange-400',
+  codex: 'bg-indigo-500/20 text-indigo-400',
+  'gemini-cli': 'bg-blue-500/20 text-blue-400',
+  openclaw: 'bg-rose-500/20 text-rose-400',
+  opencode: 'bg-emerald-500/20 text-emerald-400',
 };
 
 function getInitialColor(agentType: string): string {

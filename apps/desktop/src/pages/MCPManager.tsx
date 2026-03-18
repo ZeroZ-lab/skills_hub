@@ -102,7 +102,7 @@ export default function MCPManager() {
                 variant={viewMode === 'servers' ? 'secondary' : 'ghost'}
                 size="icon"
                 className="h-7 w-7"
-                title="Servers 视图"
+                title={t('common.views.serversView')}
                 onClick={() => setViewMode('servers')}
               >
                 <List className="h-3.5 w-3.5" />
@@ -111,7 +111,7 @@ export default function MCPManager() {
                 variant={viewMode === 'agents' ? 'secondary' : 'ghost'}
                 size="icon"
                 className="h-7 w-7"
-                title="Agents 视图"
+                title={t('common.views.agentsView')}
                 onClick={() => setViewMode('agents')}
               >
                 <LayoutList className="h-3.5 w-3.5" />
@@ -176,7 +176,7 @@ export default function MCPManager() {
                   >
                     {universalServerCount}
                   </Badge>
-                  通用 Agents
+                  {t('common.sharedAssembly')}
                 </Button>
               )}
 

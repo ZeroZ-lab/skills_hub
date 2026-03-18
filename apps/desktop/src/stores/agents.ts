@@ -24,34 +24,11 @@ export interface AgentStatus {
 // ─── Agent color/icon helpers ───────────────────────────────────────────────
 
 export const AGENT_COLORS: Record<string, string> = {
-  // CLI Agents
   'claude-code': 'bg-orange-500/20 text-orange-400 border-orange-500/30',
-  claude: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
-  aider: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
-  'open-interpreter': 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30',
-
-  // IDE Agents
-  cursor: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-  windsurf: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
-  copilot: 'bg-green-500/20 text-green-400 border-green-500/30',
-  'github-copilot': 'bg-green-500/20 text-green-400 border-green-500/30',
   codex: 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30',
-  continue: 'bg-violet-500/20 text-violet-400 border-violet-500/30',
-  cline: 'bg-pink-500/20 text-pink-400 border-pink-500/30',
-  supermaven: 'bg-rose-500/20 text-rose-400 border-rose-500/30',
-  tabnine: 'bg-teal-500/20 text-teal-400 border-teal-500/30',
-  codeium: 'bg-sky-500/20 text-sky-400 border-sky-500/30',
-
-  // Web Agents
-  'cherry-studio': 'bg-red-500/20 text-red-400 border-red-500/30',
-  'chat-nio': 'bg-amber-500/20 text-amber-400 border-amber-500/30',
-  'lobe-chat': 'bg-fuchsia-500/20 text-fuchsia-400 border-fuchsia-500/30',
-  'next-chat': 'bg-lime-500/20 text-lime-400 border-lime-500/30',
-  chatbox: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-
-  // Desktop Agents
-  jan: 'bg-slate-500/20 text-slate-400 border-slate-500/30',
-  msty: 'bg-zinc-500/20 text-zinc-400 border-zinc-500/30',
+  'gemini-cli': 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+  openclaw: 'bg-rose-500/20 text-rose-400 border-rose-500/30',
+  opencode: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
 
   // Special: Universal meta-agent
   universal:
@@ -67,34 +44,11 @@ export function getAgentColor(agentType: string): string {
 
 export function getAgentDisplayName(agentType: string): string {
   const names: Record<string, string> = {
-    // CLI Agents
     'claude-code': 'Claude Code',
-    claude: 'Claude Code',
-    aider: 'Aider',
-    'open-interpreter': 'Open Interpreter',
-
-    // IDE Agents
-    cursor: 'Cursor',
-    windsurf: 'Windsurf',
-    copilot: 'GitHub Copilot',
-    'github-copilot': 'GitHub Copilot',
     codex: 'Codex',
-    continue: 'Continue',
-    cline: 'Cline',
-    supermaven: 'Supermaven',
-    tabnine: 'Tabnine',
-    codeium: 'Codeium',
-
-    // Web Agents
-    'cherry-studio': 'Cherry Studio',
-    'chat-nio': 'Chat Nio',
-    'lobe-chat': 'Lobe Chat',
-    'next-chat': 'Next Chat',
-    chatbox: 'Chatbox',
-
-    // Desktop Agents
-    jan: 'Jan',
-    msty: 'Msty',
+    'gemini-cli': 'Gemini CLI',
+    openclaw: 'OpenClaw',
+    opencode: 'OpenCode',
 
     // Special: Universal meta-agent - will be translated in component
     universal: 'Universal',
@@ -105,16 +59,9 @@ export function getAgentDisplayName(agentType: string): string {
 // Check if an agent is a universal agent (uses .agents/skills directory)
 export function isUniversalAgent(agentType: string): boolean {
   const universalAgents = [
-    'amp',
     'codex',
-    'cline',
-    'cursor',
     'gemini-cli',
-    'github-copilot',
-    'kimi-cli',
     'opencode',
-    'replit',
-    'zed',
     'universal',
     'global', // legacy: old installs recorded as "global"
   ];
