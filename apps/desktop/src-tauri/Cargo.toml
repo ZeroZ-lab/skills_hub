@@ -1,6 +1,6 @@
 [package]
 name = "skills-manager"
-version = "0.3.0"
+version = "0.3.1"
 description = "Skills + MCP Manager for 42+ AI Agents"
 authors = ["Skills Manager Team"]
 edition = "2021"
