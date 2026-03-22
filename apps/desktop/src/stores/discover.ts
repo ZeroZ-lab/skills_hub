@@ -7,6 +7,7 @@ export interface DiscoveredSkill {
   id: string;
   name: string;
   source: string;
+  install_source: string;
   installs: number;
   description?: string;
   category?: string;

@@ -250,7 +250,7 @@ export default function Discover() {
             <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
               {activeTab === 'skills'
                 ? skillResults.map((skill) => (
-                    <SkillDiscoveryCard key={skill.name} skill={skill} onInstall={handleInstall} />
+                    <SkillDiscoveryCard key={skill.id} skill={skill} onInstall={handleInstall} />
                   ))
                 : mcpResults.map((server) => (
                     <MCPDiscoveryCard key={server.id} server={server} onAdd={handleAddMcp} />
