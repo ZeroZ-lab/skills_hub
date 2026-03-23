@@ -37,6 +37,39 @@ export interface AgentMCPConfig {
   servers: AgentMCPServer[];
 }
 
+/**
+ * Raw MCP Server shape as returned by the Rust `list_mcp_servers` command.
+ * Server-centric model: each server knows which agents it belongs to.
+ * Use this type when calling invoke('list_mcp_servers', { agent: null }).
+ * Do NOT confuse with AgentMCPServer, which has no `agents` field.
+ */
+export interface RawMCPServer {
+  id: string;
+  name: string;
+  type: string; // "stdio" | "sse" | "http" | "streamable-http"
+  enabled: boolean;
+  connectionStatus: string | null;
+  config: {
+    command?: string;
+    args?: string[];
+    env?: Record<string, string>;
+    url?: string;
+    headers?: Record<string, string>;
+    method?: string;
+  };
+  agents: Array<{
+    agent: string;
+    enabled: boolean;
+    configPath: string;
+    format: string;
+    syncStatus: string;
+    lastSyncedAt: string | null;
+    lastError: string | null;
+  }>;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // ─── Backward Compatibility ─────────────────────────────────────────────────
 
 /** @deprecated Use AgentMCPServer instead */
@@ -66,6 +99,11 @@ interface MCPState {
   agentServers: Map<string, AgentMCPServer[]>;
   isLoading: boolean;
   error: string | null;
+
+  // Global view — all servers across all agents (server-centric)
+  allServers: RawMCPServer[];
+  isLoadingAll: boolean;
+  loadAllError: string | null;
 
   // Currently selected agent for MCP management
   selectedAgent: string | null;
@@ -98,6 +136,9 @@ interface MCPState {
   // Import - read existing MCP config from agent
   importFromAgent: (agent: string) => Promise<AgentMCPServer[]>;
 
+  // Global view — fetch all servers across all agents
+  fetchAllServers: () => Promise<void>;
+
   // Setters
   setSelectedAgent: (agent: string | null) => void;
   setAddModalOpen: (open: boolean) => void;
@@ -124,6 +165,11 @@ export const useMCPStore = create<MCPState>((set, get) => ({
   agentServers: new Map(),
   isLoading: false,
   error: null,
+
+  // Global view state
+  allServers: [],
+  isLoadingAll: false,
+  loadAllError: null,
 
   // Selected agent
   selectedAgent: null,
@@ -217,6 +263,16 @@ export const useMCPStore = create<MCPState>((set, get) => ({
     } catch (err) {
       set({ error: String(err), isImporting: false });
       throw err;
+    }
+  },
+
+  fetchAllServers: async () => {
+    set({ isLoadingAll: true, loadAllError: null });
+    try {
+      const servers = await invoke<RawMCPServer[]>('list_mcp_servers', { agent: null });
+      set({ allServers: servers, isLoadingAll: false });
+    } catch (err) {
+      set({ loadAllError: String(err), isLoadingAll: false });
     }
   },
 
