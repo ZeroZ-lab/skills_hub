@@ -135,10 +135,30 @@ export function UnifiedImportModal({ open, onClose, onComplete }: UnifiedImportM
         }),
       );
 
+      // If every import (skills AND mcp) failed for every agent, surface as error
+      // stage so users don't see a misleading "Import complete" header. Partial
+      // failures (some ok, some error) still show the results table so users can
+      // see which agents succeeded and which didn't.
+      const allFailed =
+        importResults.length > 0 &&
+        importResults.every(
+          (r) =>
+            r.skills.status === 'error' &&
+            (r.mcp.status === 'error' || r.mcp.status === 'skipped'),
+        );
+      if (allFailed) {
+        const firstError = importResults[0].skills.error ?? 'All agent imports failed';
+        setErrorMsg(firstError);
+        setStage('error');
+        return;
+      }
+
       setResults(importResults);
-      onComplete(); // refresh stores before rendering results
       setStage('done');
+      onComplete(); // refresh parent stores after results are visible
     } catch (e) {
+      // Catches unexpected framework-level errors (e.g. invoke() rejecting
+      // before allSettled can capture per-agent failures).
       setErrorMsg(String(e));
       setStage('error');
     }

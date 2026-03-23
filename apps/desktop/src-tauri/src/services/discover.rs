@@ -227,6 +227,26 @@ pub async fn search_skills_with_meta(
     })
 }
 
+/// Validate that a source string has the form "owner/repo" with safe characters only.
+fn is_valid_source(s: &str) -> bool {
+    let mut parts = s.splitn(2, '/');
+    let owner = parts.next().unwrap_or("");
+    let repo = parts.next().unwrap_or("");
+    let is_safe = |p: &str| {
+        !p.is_empty()
+            && p.chars()
+                .all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_' || c == '.')
+    };
+    is_safe(owner) && is_safe(repo)
+}
+
+/// Validate that a skill_id contains only safe identifier characters.
+fn is_valid_skill_id(s: &str) -> bool {
+    !s.is_empty()
+        && s.chars()
+            .all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_' || c == '.')
+}
+
 async fn fetch_skills(query: &str, limit: u32) -> Result<Vec<DiscoveredSkill>, String> {
     let url = format!(
         "{}/api/search?q={}&limit={}",
@@ -264,10 +284,20 @@ async fn fetch_skills(query: &str, limit: u32) -> Result<Vec<DiscoveredSkill>, S
             let source = skill.source.trim().to_string();
             let raw_skill_id = skill.skill_id.trim().to_string();
             let skill_id = if raw_skill_id.is_empty() { skill.name.trim().to_string() } else { raw_skill_id };
-            let install_source = if source.is_empty() {
-                format!("@{}", skill_id)  // degenerate case; SourceParser will reject
-            } else {
+            // Validate API-supplied values before constructing install_source to prevent
+            // path traversal or injection via a compromised/malicious skills.sh response.
+            let install_source = if is_valid_source(&source) && is_valid_skill_id(&skill_id) {
                 format!("{}@{}", source, skill_id)
+            } else {
+                // SourceParser will reject this empty value; the skill is rendered
+                // without a working install button rather than with an unsafe one.
+                log::warn!(
+                    "Skipping install_source for skill {:?}: invalid source={:?} or skill_id={:?}",
+                    skill.name,
+                    source,
+                    skill_id
+                );
+                String::new()
             };
             DiscoveredSkill {
                 id: skill.id,
