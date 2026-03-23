@@ -7,7 +7,7 @@ All notable changes to Skills Hub are documented here.
 ### Added
 - **Library Import button**: [Import] button in Library page header opens `UnifiedImportModal` — select installed agents (Claude Code, Codex, etc.), import Skills + MCP servers in one flow, see per-agent results table (added/updated/errors)
 - **MCPGlobalView component**: New MCP Servers tab in Library with per-agent grouping, add/edit/remove server actions, and connection status indicators
-- **UnifiedImportModal**: 3-stage modal (agent selection → importing → results table) with `Promise.allSettled` per-agent isolation (MCP failure doesn't block Skills import), select-all checkbox with indeterminate state, and `onComplete()` called before results render to refresh Library immediately
+- **UnifiedImportModal**: 3-stage modal (agent selection → importing → results table) with `Promise.allSettled` per-agent isolation (MCP failure doesn't block Skills import), select-all checkbox with indeterminate state, and `onComplete()` called after results are visible to refresh Library without blocking the UI
 - **mcp.ts store**: `fetchAllServers`, `fetchAgentServers`, `addAgentServer`, `updateAgentServer`, `removeAgentServer` operations with per-agent map storage
 
 ### Fixed

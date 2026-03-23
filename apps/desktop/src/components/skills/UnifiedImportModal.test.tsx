@@ -318,14 +318,37 @@ describe('UnifiedImportModal', () => {
       expect(screen.getByText(/Import complete|Import failed/)).toBeInTheDocument();
     });
 
+    it('shows error stage when all agents fail both skills AND mcp (allFailed)', async () => {
+      agentsState.agents = [agentClaudeCode];
+      // Both import_skills and import_mcp_from_agent reject → allFailed triggers error stage
+      mockInvoke.mockRejectedValue(new Error('connection refused'));
+
+      renderModal();
+      fireEvent.click(screen.getAllByRole('checkbox')[1]);
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: /Import/ }));
+      });
+
+      expect(screen.getByText(/Import failed/i)).toBeInTheDocument();
+      expect(screen.getByText(/connection refused/)).toBeInTheDocument();
+    });
+
     it('Retry button returns to select stage', async () => {
       agentsState.agents = [agentClaudeCode];
-      // Force the outer try/catch by making Promise.all itself throw (impossible with allSettled)
-      // Test retry button visibility by simulating error stage through component internals
-      // Since error state requires outer throw, we test the error UI renders correctly
-      // by checking the component handles it gracefully when error is set manually
-      // This is covered by the state machine design
-      expect(true).toBe(true); // state machine tested via integration
+      mockInvoke.mockRejectedValue(new Error('timeout'));
+
+      renderModal();
+      fireEvent.click(screen.getAllByRole('checkbox')[1]);
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: /Import/ }));
+      });
+
+      // Verify error stage rendered
+      expect(screen.getByText(/Import failed/i)).toBeInTheDocument();
+
+      // Click Retry → back to select stage
+      fireEvent.click(screen.getByRole('button', { name: /Retry/i }));
+      expect(screen.getByRole('button', { name: /Import/ })).toBeInTheDocument();
     });
   });
 });

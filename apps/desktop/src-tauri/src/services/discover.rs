@@ -261,7 +261,7 @@ async fn fetch_skills(query: &str, limit: u32) -> Result<Vec<DiscoveredSkill>, S
 
     let response = client
         .get(&url)
-        .header("User-Agent", "Skills-Manager/0.3.0")
+        .header("User-Agent", concat!("Skills-Manager/", env!("CARGO_PKG_VERSION")))
         .send()
         .await
         .map_err(|e| format!("Network error: {}", e))?;
@@ -478,7 +478,7 @@ async fn fetch_mcp_servers(query: &str, limit: u32) -> Result<Vec<DiscoveredMCPS
 
     let mut request = client
         .get(&url)
-        .header("User-Agent", "Skills-Manager/0.3.0")
+        .header("User-Agent", concat!("Skills-Manager/", env!("CARGO_PKG_VERSION")))
         .header("Accept", "application/vnd.github+json");
 
     if let Some(token) = github_token.as_deref().filter(|v| !v.trim().is_empty()) {
@@ -539,9 +539,17 @@ mod tests {
         assert!(results.is_ok());
         let response = results.unwrap();
         assert!(!response.items.is_empty());
-        // All items must have non-empty install_source in "owner/repo@skill" format
+        // Non-empty install_source must be in "owner/repo@skill" format.
+        // Skills with invalid API-sourced source/skill_id values produce an intentionally
+        // empty install_source (rejection path) rather than a malformed one.
         for skill in &response.items {
-            assert!(skill.install_source.contains('@'), "install_source should contain '@': {}", skill.install_source);
+            if !skill.install_source.is_empty() {
+                assert!(
+                    skill.install_source.contains('@'),
+                    "non-empty install_source should contain '@': {}",
+                    skill.install_source
+                );
+            }
         }
     }
 
@@ -563,5 +571,40 @@ mod tests {
         let effective_id = if skill_id.is_empty() { skill_name } else { skill_id };
         let install_source = format!("{}@{}", source, effective_id);
         assert_eq!(install_source, "some-owner/some-repo@some-skill-name");
+    }
+
+    #[test]
+    fn test_is_valid_source_accepts_normal() {
+        assert!(is_valid_source("owner/repo"));
+        assert!(is_valid_source("my-org/my-repo.v2"));
+        assert!(is_valid_source("user_name/repo_name"));
+    }
+
+    #[test]
+    fn test_is_valid_source_rejects_path_traversal() {
+        assert!(!is_valid_source("../evil/repo"));
+        assert!(!is_valid_source("owner/../repo"));
+        assert!(!is_valid_source("owner/repo/extra"));
+        assert!(!is_valid_source("owner"));     // missing slash
+        assert!(!is_valid_source(""));           // empty
+        assert!(!is_valid_source("/repo"));      // empty owner
+        assert!(!is_valid_source("owner/"));     // empty repo
+        assert!(!is_valid_source("own er/repo")); // space in owner
+    }
+
+    #[test]
+    fn test_is_valid_skill_id_accepts_normal() {
+        assert!(is_valid_skill_id("my-skill"));
+        assert!(is_valid_skill_id("skill_v2.0"));
+        assert!(is_valid_skill_id("react-best-practices"));
+    }
+
+    #[test]
+    fn test_is_valid_skill_id_rejects_unsafe() {
+        assert!(!is_valid_skill_id(""));
+        assert!(!is_valid_skill_id("../etc/passwd"));
+        assert!(!is_valid_skill_id("skill/subdir"));
+        assert!(!is_valid_skill_id("skill id"));  // space
+        assert!(!is_valid_skill_id("skill@name")); // at-sign
     }
 }

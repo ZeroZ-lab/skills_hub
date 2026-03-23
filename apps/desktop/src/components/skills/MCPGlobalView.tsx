@@ -169,12 +169,16 @@ export function MCPGlobalView() {
   const agents = useAgentsStore((s) => s.agents);
   const fetchAgents = useAgentsStore((s) => s.fetchAgents);
 
+  // Fetch servers once on mount. Fetch agents only if the store is empty —
+  // omitting agents.length from deps intentionally prevents a second fetchAllServers
+  // call that would fire after agents load and change agents.length.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     void fetchAllServers();
     if (agents.length === 0) {
       void fetchAgents();
     }
-  }, [fetchAllServers, fetchAgents, agents.length]);
+  }, [fetchAllServers, fetchAgents]);
 
   // Build agent-centric grouped view (only MCP-capable agents)
   const mcpAgents = agents.filter((a) => a.config.supportsMcp);
