@@ -10,6 +10,7 @@ pub struct DiscoveredSkill {
     pub id: String,
     pub name: String,
     pub source: String,
+    pub install_source: String,
     pub installs: u32,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
@@ -55,6 +56,8 @@ struct SkillsApiSkill {
     id: String,
     name: String,
     source: String,
+    #[serde(rename = "skillId", default)]
+    skill_id: String,
     installs: u32,
     created_at: Option<String>,
 }
@@ -224,6 +227,26 @@ pub async fn search_skills_with_meta(
     })
 }
 
+/// Validate that a source string has the form "owner/repo" with safe characters only.
+fn is_valid_source(s: &str) -> bool {
+    let mut parts = s.splitn(2, '/');
+    let owner = parts.next().unwrap_or("");
+    let repo = parts.next().unwrap_or("");
+    let is_safe = |p: &str| {
+        !p.is_empty()
+            && p.chars()
+                .all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_' || c == '.')
+    };
+    is_safe(owner) && is_safe(repo)
+}
+
+/// Validate that a skill_id contains only safe identifier characters.
+fn is_valid_skill_id(s: &str) -> bool {
+    !s.is_empty()
+        && s.chars()
+            .all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_' || c == '.')
+}
+
 async fn fetch_skills(query: &str, limit: u32) -> Result<Vec<DiscoveredSkill>, String> {
     let url = format!(
         "{}/api/search?q={}&limit={}",
@@ -238,7 +261,7 @@ async fn fetch_skills(query: &str, limit: u32) -> Result<Vec<DiscoveredSkill>, S
 
     let response = client
         .get(&url)
-        .header("User-Agent", "Skills-Manager/0.3.0")
+        .header("User-Agent", concat!("Skills-Manager/", env!("CARGO_PKG_VERSION")))
         .send()
         .await
         .map_err(|e| format!("Network error: {}", e))?;
@@ -257,23 +280,125 @@ async fn fetch_skills(query: &str, limit: u32) -> Result<Vec<DiscoveredSkill>, S
     Ok(data
         .skills
         .into_iter()
-        .map(|skill| DiscoveredSkill {
-            id: skill.id,
-            name: skill.name,
-            source: skill.source,
-            installs: skill.installs,
-            description: None,
-            category: None,
-            tags: None,
-            created_at: skill.created_at,
+        .map(|skill| {
+            let source = skill.source.trim().to_string();
+            let raw_skill_id = skill.skill_id.trim().to_string();
+            let skill_id = if raw_skill_id.is_empty() { skill.name.trim().to_string() } else { raw_skill_id };
+            // Validate API-supplied values before constructing install_source to prevent
+            // path traversal or injection via a compromised/malicious skills.sh response.
+            let install_source = if is_valid_source(&source) && is_valid_skill_id(&skill_id) {
+                format!("{}@{}", source, skill_id)
+            } else {
+                // SourceParser will reject this empty value; the skill is rendered
+                // without a working install button rather than with an unsafe one.
+                log::warn!(
+                    "Skipping install_source for skill {:?}: invalid source={:?} or skill_id={:?}",
+                    skill.name,
+                    source,
+                    skill_id
+                );
+                String::new()
+            };
+            DiscoveredSkill {
+                id: skill.id,
+                name: skill.name,
+                source: skill.source,
+                install_source,
+                installs: skill.installs,
+                description: None,
+                category: None,
+                tags: None,
+                created_at: skill.created_at,
+            }
         })
         .collect())
 }
 
-pub async fn get_featured_skills() -> Result<Vec<DiscoveredSkill>, String> {
-    // Get popular skills using a broad query
-    // API requires at least 2 characters, so we use common terms
-    search_skills("ai", 100).await
+pub async fn get_featured_skills_with_meta() -> Result<DiscoverResponse<DiscoveredSkill>, String> {
+    let policy = build_policy();
+    let cache_key = "skills:__featured__:0".to_string();
+
+    if !policy.cache_ttl.is_zero() {
+        if let Some(entry) = read_cache_entry(&cache_key) {
+            let age = age_of(&entry);
+            if age <= policy.cache_ttl {
+                let refreshing = !policy.refresh_interval.is_zero() && age >= policy.refresh_interval;
+                if refreshing {
+                    let key_owned = cache_key.clone();
+                    tokio::spawn(async move {
+                        if let Ok(fresh) = fetch_featured_skills().await {
+                            write_cache_entry(key_owned, CachePayload::Skills(fresh));
+                        }
+                    });
+                }
+                if let CachePayload::Skills(skills) = entry.payload {
+                    return Ok(DiscoverResponse {
+                        items: skills,
+                        cache_hit: true,
+                        refreshing,
+                        fetched_at: unix_timestamp(entry.fetched_at),
+                    });
+                }
+            } else {
+                remove_cache_entry(&cache_key);
+            }
+        }
+    }
+
+    let skills = fetch_featured_skills().await?;
+    if !policy.cache_ttl.is_zero() {
+        write_cache_entry(cache_key, CachePayload::Skills(skills.clone()));
+    }
+
+    Ok(DiscoverResponse {
+        items: skills,
+        cache_hit: false,
+        refreshing: false,
+        fetched_at: unix_timestamp(SystemTime::now()),
+    })
+}
+
+async fn fetch_featured_skills() -> Result<Vec<DiscoveredSkill>, String> {
+    const KEYWORDS: &[&str] = &["git", "react", "python", "test", "docker"];
+    const LIMIT_PER_KEYWORD: u32 = 20;
+
+    let mut set = tokio::task::JoinSet::new();
+    for &kw in KEYWORDS {
+        set.spawn(fetch_skills(kw, LIMIT_PER_KEYWORD));
+    }
+
+    let mut all_skills: Vec<DiscoveredSkill> = Vec::new();
+    let mut any_success = false;
+
+    while let Some(result) = set.join_next().await {
+        match result {
+            Ok(Ok(skills)) => {
+                any_success = true;
+                all_skills.extend(skills);
+            }
+            Ok(Err(e)) => {
+                log::warn!("Featured keyword query failed: {}", e);
+            }
+            Err(e) => {
+                log::warn!("Featured keyword task panicked: {}", e);
+            }
+        }
+    }
+
+    if !any_success {
+        return Err("All featured discovery queries failed".to_string());
+    }
+
+    // Dedup by compound id, sort by installs desc, take 50
+    let mut seen = std::collections::HashSet::new();
+    let mut deduped: Vec<DiscoveredSkill> = all_skills
+        .into_iter()
+        .filter(|s| seen.insert(s.id.clone()))
+        .collect();
+    deduped.sort_by(|a, b| b.installs.cmp(&a.installs));
+    deduped.truncate(50);
+
+    Ok(deduped)
 }
 
 pub async fn search_mcp_servers(query: &str, limit: u32) -> Result<Vec<DiscoveredMCPServer>, String> {
@@ -353,7 +478,7 @@ async fn fetch_mcp_servers(query: &str, limit: u32) -> Result<Vec<DiscoveredMCPS
 
     let mut request = client
         .get(&url)
-        .header("User-Agent", "Skills-Manager/0.3.0")
+        .header("User-Agent", concat!("Skills-Manager/", env!("CARGO_PKG_VERSION")))
         .header("Accept", "application/vnd.github+json");
 
     if let Some(token) = github_token.as_deref().filter(|v| !v.trim().is_empty()) {
@@ -409,8 +534,77 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_get_featured() {
-        let results = get_featured_skills().await;
+    async fn test_get_featured_with_meta() {
+        let results = get_featured_skills_with_meta().await;
         assert!(results.is_ok());
+        let response = results.unwrap();
+        assert!(!response.items.is_empty());
+        // Non-empty install_source must be in "owner/repo@skill" format.
+        // Skills with invalid API-sourced source/skill_id values produce an intentionally
+        // empty install_source (rejection path) rather than a malformed one.
+        for skill in &response.items {
+            if !skill.install_source.is_empty() {
+                assert!(
+                    skill.install_source.contains('@'),
+                    "non-empty install_source should contain '@': {}",
+                    skill.install_source
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn test_install_source_format() {
+        // Simulate the mapping logic from fetch_skills()
+        let source = "vercel-labs/agent-skills";
+        let skill_id = "vercel-react-best-practices";
+        let install_source = format!("{}@{}", source, skill_id);
+        assert_eq!(install_source, "vercel-labs/agent-skills@vercel-react-best-practices");
+    }
+
+    #[test]
+    fn test_install_source_fallback_to_name() {
+        // When skillId is empty, name is used as fallback
+        let source = "some-owner/some-repo";
+        let skill_id = "";
+        let skill_name = "some-skill-name";
+        let effective_id = if skill_id.is_empty() { skill_name } else { skill_id };
+        let install_source = format!("{}@{}", source, effective_id);
+        assert_eq!(install_source, "some-owner/some-repo@some-skill-name");
+    }
+
+    #[test]
+    fn test_is_valid_source_accepts_normal() {
+        assert!(is_valid_source("owner/repo"));
+        assert!(is_valid_source("my-org/my-repo.v2"));
+        assert!(is_valid_source("user_name/repo_name"));
+    }
+
+    #[test]
+    fn test_is_valid_source_rejects_path_traversal() {
+        assert!(!is_valid_source("../evil/repo"));
+        assert!(!is_valid_source("owner/../repo"));
+        assert!(!is_valid_source("owner/repo/extra"));
+        assert!(!is_valid_source("owner"));     // missing slash
+        assert!(!is_valid_source(""));           // empty
+        assert!(!is_valid_source("/repo"));      // empty owner
+        assert!(!is_valid_source("owner/"));     // empty repo
+        assert!(!is_valid_source("own er/repo")); // space in owner
+    }
+
+    #[test]
+    fn test_is_valid_skill_id_accepts_normal() {
+        assert!(is_valid_skill_id("my-skill"));
+        assert!(is_valid_skill_id("skill_v2.0"));
+        assert!(is_valid_skill_id("react-best-practices"));
+    }
+
+    #[test]
+    fn test_is_valid_skill_id_rejects_unsafe() {
+        assert!(!is_valid_skill_id(""));
+        assert!(!is_valid_skill_id("../etc/passwd"));
+        assert!(!is_valid_skill_id("skill/subdir"));
+        assert!(!is_valid_skill_id("skill id"));  // space
+        assert!(!is_valid_skill_id("skill@name")); // at-sign
     }
 }

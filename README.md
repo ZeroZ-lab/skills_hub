@@ -17,7 +17,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-0.3.0-blue.svg" alt="Version">
+  <img src="https://img.shields.io/badge/version-0.3.2-blue.svg" alt="Version">
   <img src="https://img.shields.io/badge/platform-macOS%20|%20Linux%20|%20Windows-lightgrey.svg" alt="Platform">
   <img src="https://img.shields.io/badge/stack-Tauri%202%20+%20React%20+%20Rust-orange.svg" alt="Tech Stack">
 </p>

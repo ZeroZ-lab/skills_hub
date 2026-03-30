@@ -134,7 +134,7 @@ export function SkillDiscoveryCard({ skill, onInstall }: SkillDiscoveryCardProps
         <Button
           size="sm"
           className="flex-1 gap-1.5"
-          onClick={() => onInstall(skill.source)}
+          onClick={() => onInstall(skill.install_source)}
         >
           <Download className="h-3.5 w-3.5" />
           Install

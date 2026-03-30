@@ -85,3 +85,4 @@ coverage/
 *.AppImage
 *.msi
 *.nsis
+.gstack/

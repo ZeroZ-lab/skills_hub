@@ -1,6 +1,6 @@
 use crate::services::discover::{
-    search_mcp_servers_with_meta, search_skills_with_meta, DiscoverResponse, DiscoveredMCPServer,
-    DiscoveredSkill,
+    get_featured_skills_with_meta, search_mcp_servers_with_meta, search_skills_with_meta,
+    DiscoverResponse, DiscoveredMCPServer, DiscoveredSkill,
 };
 
 #[tauri::command]
@@ -20,9 +20,7 @@ pub async fn discover_skills(
 pub async fn get_featured() -> Result<DiscoverResponse<DiscoveredSkill>, String> {
     log::info!("Getting featured skills");
 
-    let results = search_skills_with_meta("ai", 100).await?;
-
-    Ok(results)
+    get_featured_skills_with_meta().await
 }
 
 #[tauri::command]

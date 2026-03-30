@@ -9,113 +9,99 @@ permissions:
   contents: write
 
 jobs:
-  create-release:
-    name: Create Release
-    runs-on: ubuntu-latest
-    outputs:
-      release_id: ${{ steps.create-release.outputs.id }}
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Create Release
-        id: create-release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref_name }}
-          release_name: Release ${{ github.ref_name }}
-          draft: true
-          prerelease: false
-
-  build-and-upload:
-    name: Build and Upload
-    needs: create-release
-    runs-on: ${{ matrix.os }}
+  publish-tauri:
+    name: Build & Publish (${{ matrix.platform }} / ${{ matrix.rust-target }})
     strategy:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-latest
-            target: x86_64-unknown-linux-gnu
-            asset_name: linux-x64
-          - os: macos-latest
-            target: x86_64-apple-darwin
-            asset_name: macos-x64
-          - os: macos-latest
-            target: aarch64-apple-darwin
-            asset_name: macos-arm64
-          - os: windows-latest
-            target: x86_64-pc-windows-msvc
-            asset_name: windows-x64
+          - platform: macos-latest
+            rust-target: aarch64-apple-darwin
+            args: --target aarch64-apple-darwin
+          - platform: macos-latest
+            rust-target: x86_64-apple-darwin
+            args: --target x86_64-apple-darwin
+          - platform: ubuntu-22.04
+            rust-target: x86_64-unknown-linux-gnu
+            args: ''
+          - platform: windows-latest
+            rust-target: x86_64-pc-windows-msvc
+            args: ''
+
+    runs-on: ${{ matrix.platform }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Rust
-        uses: dtolnay/rust-action@stable
-        with:
-          targets: ${{ matrix.target }}
+      - name: Install Linux system dependencies
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libgtk-3-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            patchelf \
+            libssl-dev
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'pnpm'
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 8
-          run_install: false
-
-      - name: Install dependencies
+      - name: Install frontend dependencies
+        # pnpm-lock.yaml 在 repo root，必须在此处运行（不能 working-directory: apps/desktop）
         run: pnpm install --frozen-lockfile
 
-      - name: Install Linux dependencies
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libappindicator3-dev librsvg2-dev patchelf
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.rust-target }}
 
-      - name: Build desktop app
-        run: pnpm tauri build --target ${{ matrix.target }}
-        env:
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: apps/desktop/src-tauri -> target
+          key: ${{ matrix.rust-target }}
 
-      - name: Upload to Release (macOS)
-        if: matrix.os == 'macos-latest'
-        uses: actions/upload-release-asset@v1
+      - name: Build and publish
+        uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # ── macOS 代码签名（暂跳过）──────────────────────────────────────────
+          # 有 Apple Developer 账号后，在 GitHub repo Settings → Secrets 添加以下变量
+          # 并取消下方注释：
+          # APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          # APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          # APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          # APPLE_ID: ${{ secrets.APPLE_ID }}
+          # APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          # APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          # ── Tauri 更新签名（可选）────────────────────────────────────────────
+          # TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          # TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: apps/desktop/src-tauri/target/${{ matrix.target }}/release/bundle/dmg/*.dmg
-          asset_name: Skills-Manager-${{ github.ref_name }}-${{ matrix.asset_name }}.dmg
-          asset_content_type: application/octet-stream
+          projectPath: apps/desktop
+          tagName: ${{ github.ref_name }}
+          releaseName: Skills Hub ${{ github.ref_name }}
+          releaseBody: |
+            ## 下载安装
 
-      - name: Upload to Release (Linux)
-        if: matrix.os == 'ubuntu-latest'
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: apps/desktop/src-tauri/target/${{ matrix.target }}/release/bundle/appimage/*.AppImage
-          asset_name: Skills-Manager-${{ github.ref_name }}-${{ matrix.asset_name }}.AppImage
-          asset_content_type: application/octet-stream
+            | 平台 | 安装包 |
+            |------|--------|
+            | macOS (Apple Silicon) | `Skills.Hub_*_aarch64.dmg` |
+            | macOS (Intel) | `Skills.Hub_*_x64.dmg` |
+            | Windows | `Skills.Hub_*_x64-setup.exe` (NSIS) 或 `Skills.Hub_*_x64.msi` |
+            | Linux | `Skills.Hub_*_amd64.AppImage` |
 
-      - name: Upload to Release (Windows)
-        if: matrix.os == 'windows-latest'
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
-          asset_path: apps/desktop/src-tauri/target/${{ matrix.target }}/release/bundle/msi/*.msi
-          asset_name: Skills-Manager-${{ github.ref_name }}-${{ matrix.asset_name }}.msi
-          asset_content_type: application/octet-stream
+            > **macOS 用户**：如出现"来自未识别开发者"提示，右键 → 打开 即可绕过（暂无代码签名）。
+          releaseDraft: true
+          prerelease: false
+          args: ${{ matrix.args }}

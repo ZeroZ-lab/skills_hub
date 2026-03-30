@@ -6,8 +6,7 @@
   "nav": {
     "dashboard": "仪表盘",
     "discover": "发现市场",
-    "skills": "Skills 资产库",
-    "mcp": "MCP 装配",
+    "skills": "资产库",
     "agents": "Agent 装配",
     "settings": "设置",
     "group": {
@@ -218,6 +217,15 @@
       "discoverSkills": "发现可入库物料",
       "loadingDesc": "正在加载推荐物料...",
       "install": "加入资产库"
+    },
+    "installed": {
+      "title": "资产库",
+      "description": "管理已安装的 Skills 和 MCP Servers",
+      "empty": {
+        "title": "暂无已安装的 Skills",
+        "description": "去发现市场寻找 Skills",
+        "action": "前往发现市场"
+      }
     },
     "skills": {
       "title": "Skills 资产库",

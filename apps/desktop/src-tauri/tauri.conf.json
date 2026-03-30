@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/nicklasb4711/cc-switch/main/src-tauri/gen/schemas/desktop-schema.json",
   "productName": "Skills Hub",
-  "version": "0.3.0",
+  "version": "0.3.2",
   "identifier": "com.skills-manager.app",
   "build": {
     "beforeDevCommand": "pnpm dev",

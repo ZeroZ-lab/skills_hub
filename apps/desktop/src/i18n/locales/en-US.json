@@ -6,8 +6,7 @@
   "nav": {
     "dashboard": "Dashboard",
     "discover": "Market",
-    "skills": "Skill Library",
-    "mcp": "MCP Assembly",
+    "skills": "Library",
     "agents": "Agent Assembly",
     "settings": "Settings",
     "group": {
@@ -219,6 +218,15 @@
       "discoverSkills": "Discover Assets",
       "loadingDesc": "Loading recommended assets...",
       "install": "Add to Library"
+    },
+    "installed": {
+      "title": "Library",
+      "description": "Manage your installed skills and MCP servers",
+      "empty": {
+        "title": "No skills installed",
+        "description": "Browse the marketplace to find skills",
+        "action": "Browse Marketplace"
+      }
     },
     "skills": {
       "title": "Skill Library",
